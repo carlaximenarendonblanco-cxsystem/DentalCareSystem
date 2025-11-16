@@ -65,7 +65,39 @@
         </div>
     </div>
 
-    <!-- Acciones del administrador -->
+    @auth
+    @if(auth()->user()->role === 'superadmin')
+    <!-- Información del sistema -->
+    <div class="mt-10 mb-5">
+        <h1 class="title1 text-center pb-5">{{ __('Información del Registro') }}</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-4 pb-5">
+
+            <div class="flex gap-2">
+                <h3 class="title4">{{ __('Clínica asignada:') }}</h3>
+                <span class="txt">
+                    {{ $event->clinic->name ?? 'Sin clínica' }}
+                </span>
+            </div>
+
+            <div class="flex gap-2">
+                <h3 class="title4">{{ __('Creado por:') }}</h3>
+                <span class="txt">
+                    {{ $event->creator->name ?? 'N/A' }}
+                </span>
+            </div>
+
+            <div class="flex gap-2">
+                <h3 class="title4">{{ __('Última edición por:') }}</h3>
+                <span class="txt">
+                    {{ $event->editor->name ?? 'Sin ediciones' }}
+                </span>
+            </div>
+
+        </div>
+    </div>
+    @endif
+    @endauth
     @auth
     @if(Auth::user()->role === 'admin')
     <div>

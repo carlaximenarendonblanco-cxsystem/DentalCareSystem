@@ -1,7 +1,7 @@
 @extends('layouts._partials.layout')
 @section('title','Información del Presupuesto')
 @section('subtitle')
-    {{ __('Información del Presupuesto') }}
+{{ __('Información del Presupuesto') }}
 @endsection
 @section('content')
 <div class="flex justify-end pt-5 pr-5">
@@ -16,12 +16,52 @@
 
     <!-- Información general del presupuesto -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 pb-5">
-        <div class="flex gap-2"><h3 class="title4">{{ __('Código:') }}</h3><span class="txt">{{ $budget->budget }}</span></div>
-        <div class="flex gap-2"><h3 class="title4">{{ __('Procedimiento:') }}</h3><span class="txt">{{ $budget->procedure }}</span></div>
-        <div class="flex gap-2"><h3 class="title4">{{ __('Descripción:') }}</h3><span class="txt">{{ $budget->description }}</span></div>
-        <div class="flex gap-2"><h3 class="title4">{{ __('Costo Total:') }}</h3><span class="txt">Bs. {{ number_format($budget->total_amount, 2) }}</span></div>
+        <div class="flex gap-2">
+            <h3 class="title4">{{ __('Código:') }}</h3><span class="txt">{{ $budget->budget }}</span>
+        </div>
+        <div class="flex gap-2">
+            <h3 class="title4">{{ __('Procedimiento:') }}</h3><span class="txt">{{ $budget->procedure }}</span>
+        </div>
+        <div class="flex gap-2">
+            <h3 class="title4">{{ __('Descripción:') }}</h3><span class="txt">{{ $budget->description }}</span>
+        </div>
+        <div class="flex gap-2">
+            <h3 class="title4">{{ __('Costo Total:') }}</h3><span class="txt">Bs. {{ number_format($budget->total_amount, 2) }}</span>
+        </div>
     </div>
+    @auth
+    @if(auth()->user()->role === 'superadmin')
+    <!-- Información del sistema -->
+    <div class="mt-10 mb-5">
+        <h1 class="title1 text-center pb-5">{{ __('Información del Registro') }}</h1>
 
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-4 pb-5">
+
+            <div class="flex gap-2">
+                <h3 class="title4">{{ __('Clínica asignada:') }}</h3>
+                <span class="txt">
+                    {{ $budget->clinic->name ?? 'Sin clínica' }}
+                </span>
+            </div>
+
+            <div class="flex gap-2">
+                <h3 class="title4">{{ __('Creado por:') }}</h3>
+                <span class="txt">
+                    {{ $budget->creator->name ?? 'N/A' }}
+                </span>
+            </div>
+
+            <div class="flex gap-2">
+                <h3 class="title4">{{ __('Última edición por:') }}</h3>
+                <span class="txt">
+                    {{ $budget->editor->name ?? 'Sin ediciones' }}
+                </span>
+            </div>
+
+        </div>
+    </div>
+    @endif
+    @endauth
     <!-- Botón presupuesto de tratamiento -->
     <div class="flex justify-center mt-8">
         <a href="{{ route('treatments.create', $budget->id) }}" class="botton3">{{ __('Crear Presupuesto') }}</a>

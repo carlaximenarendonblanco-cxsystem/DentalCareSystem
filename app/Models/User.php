@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Clinic;
+use App\Models\User;
 
 class User extends Authenticatable
 {
@@ -23,7 +25,7 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $guarded=[];
+    protected $guarded = [];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -58,5 +60,13 @@ class User extends Authenticatable
     public function clinic()
     {
         return $this->belongsTo(Clinic::class);
+    }
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+    public function editor()
+    {
+        return $this->belongsTo(User::class, 'edit_by');
     }
 }

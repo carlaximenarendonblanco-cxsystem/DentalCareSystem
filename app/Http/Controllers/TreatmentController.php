@@ -14,13 +14,29 @@ class TreatmentController extends Controller
 
     public function index()
     {
-        $treatments = Treatment::simplePaginate(10);
+        $user = Auth::user();
+
+        if ($user->role === 'superadmin') {
+            $treatments = Treatment::orderBy('id', 'DESC')->paginate(10);
+        } else {
+            $treatments = Treatment::where('clinic_id', $user->clinic_id)
+                ->orderBy('id', 'DESC')
+                ->paginate(10);
+        }
+
         return view('treatments.index', compact('treatments'));
     }
 
     public function create()
     {
-        $budgets = Budget::all();
+        $user = Auth::user();
+
+        if ($user->role === 'superadmin') {
+            $budgets = Budget::all();
+        } else {
+            $budgets = Budget::where('clinic_id', $user->clinic_id)->get();
+        }
+
         return view('treatments.create', compact('budgets'));
     }
 
@@ -35,17 +51,24 @@ class TreatmentController extends Controller
             'discount_type' => 'nullable|string|in:fixed,percentage',
             'details' => 'nullable|string|max:255',
         ]);
-        
+
         $selectedBudgets = $request->input('selected_budgets', []);
         $quantities = $request->input('quantity', []);
 
+        $user = Auth::user();
         $totalAmount = 0;
         $budgetCodes = [];
 
         foreach ($selectedBudgets as $id) {
-            $budget = Budget::find($id);
+
+            $budget = Budget::where('id', $id)
+                ->when($user->role !== 'superadmin', function ($query) use ($user) {
+                    return $query->where('clinic_id', $user->clinic_id);
+                })
+                ->first();
+
             if ($budget) {
-                $quantity = isset($quantities[$id]) ? (int)$quantities[$id] : 1;
+                $quantity = isset($quantities[$id]) ? (int) $quantities[$id] : 1;
                 $totalAmount += $budget->total_amount * $quantity;
                 $budgetCodes[$id] = $quantity;
             }
@@ -53,7 +76,6 @@ class TreatmentController extends Controller
 
         $discountType = $request->input('discount_type', 'fixed');
         $discountValue = $request->input('discount', 0);
-
         $discount = ($discountType === 'percentage') ? ($discountValue / 100) * $totalAmount : $discountValue;
         $finalAmount = max($totalAmount - $discount, 0);
 
@@ -65,6 +87,7 @@ class TreatmentController extends Controller
             'discount' => $discount,
             'amount' => $finalAmount,
             'details' => $request->details,
+            'clinic_id' => $user->clinic_id, // <<-- CLÍNICA AGREGADA
             'pdf_path' => null,
         ]);
 
@@ -73,7 +96,7 @@ class TreatmentController extends Controller
         $pdf = Pdf::loadView('treatments.pdf', [
             'treatment' => $treatment,
             'budgets' => $budgets,
-            'author' => Auth::user()->name ?? 'Unknown User',
+            'author' => $user->name ?? 'Unknown User',
         ])->setPaper('a4', 'portrait');
 
         $fileName = 'treatment_' . $treatment->id . '.pdf';
@@ -83,20 +106,25 @@ class TreatmentController extends Controller
         Storage::put($storagePath, $pdf->output());
 
         $treatment->update(['pdf_path' => $storagePath]);
+
         $fullPath = storage_path('app/' . $storagePath);
 
         if (ob_get_level()) {
             ob_end_clean();
         }
-        return response()->download($fullPath, $fileName, [
-            'Content-Type' => 'application/pdf', 
-        ])->deleteFileAfterSend(false);
-    
+
+        return response()->download($fullPath, $fileName)->deleteFileAfterSend(false);
     }
 
     public function show($id)
     {
         $treatment = Treatment::findOrFail($id);
+
+        $user = Auth::user();
+        if ($user->role !== 'superadmin' && $treatment->clinic_id !== $user->clinic_id) {
+            abort(403, 'No autorizado');
+        }
+
         $budgetIds = array_keys(json_decode($treatment->budget_codes, true) ?? []);
         $budgets = Budget::whereIn('id', $budgetIds)->get();
 
@@ -106,18 +134,36 @@ class TreatmentController extends Controller
     public function destroy($id)
     {
         $treatment = Treatment::findOrFail($id);
-        if ($treatment->pdf_path && file_exists(public_path($treatment->pdf_path))) {
-            unlink(public_path($treatment->pdf_path));
+
+        $user = Auth::user();
+        if ($user->role !== 'superadmin' && $treatment->clinic_id !== $user->clinic_id) {
+            abort(403, 'No autorizado');
         }
+
+        if ($treatment->pdf_path && Storage::exists($treatment->pdf_path)) {
+            Storage::delete($treatment->pdf_path);
+        }
+
         $treatment->delete();
 
         return redirect()->route('treatments.index')->with('danger', 'Tratamiento eliminado con éxito.');
     }
+
     public function search(Request $request)
     {
         $search = $request->input('search');
-        $treatments = Treatment::where('name', 'LIKE', '%' . $search . '%')
-            ->orWhere('ci_patient', 'LIKE', '%' . $search . '%')->get();
+        $user = Auth::user();
+
+        $treatments = Treatment::query()
+            ->where(function ($query) use ($search) {
+                $query->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('ci_patient', 'LIKE', '%' . $search . '%');
+            })
+            ->when($user->role !== 'superadmin', function ($query) use ($user) {
+                return $query->where('clinic_id', $user->clinic_id);
+            })
+            ->get();
+
         return view('treatments.search', compact('treatments'));
     }
 }

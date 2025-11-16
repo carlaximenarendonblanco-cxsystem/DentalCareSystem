@@ -16,19 +16,17 @@
 </div>
 
 <div class="bg-white rounded-lg max-w-6xl mx-auto p-5 shadow-sm">
-    <div class="grid grid-cols-5 gap-4 border-b border-gray-300 pb-2 mb-3 text-gray-700 font-semibold">
+    <div class="grid grid-cols-4 gap-4 border-b border-gray-300 pb-2 mb-3 text-gray-700 font-semibold">
         <h3 class="text-center">{{ __('Nombre') }}</h3>
         <h3 class="text-center">{{ __('Email') }}</h3>
         <h3 class="text-center">{{ __('Rol') }}</h3>
-        <h3 class="text-center">{{ __('Clínica') }}</h3>
         <h3 class="text-center">{{ __('Acciones') }}</h3>
     </div>
     @forelse($users as $user)
-    <div class="grid grid-cols-5 gap-4 items-center border-b border-gray-200 py-3 text-gray-800 hover:bg-gray-50 transition">
+    <div class="grid grid-cols-4 gap-4 items-center border-b border-gray-200 py-3 text-gray-800 hover:bg-gray-50 transition">
         <div class="text-center">{{ $user->name }}</div>
         <div class="text-center">{{ $user->email }}</div>
         <div class="text-center">{{ ucfirst($user->role) }}</div>
-        <div class="text-center">{{ $user->clinic ? $user->clinic->name : __('Sin clínica') }}</div>
         <div class="flex justify-center gap-3">
             @auth
                 @if(Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\File;
+use App\Models\Clinic;
+use App\Models\User;
 
 class MultimediaFile extends Model
 {
@@ -23,7 +25,18 @@ class MultimediaFile extends Model
     public function reports():HasMany{
         return $this->hasMany(Report::class, 'report_id', 'radiography_id');
     }
-
+        public function clinic()
+    {
+        return $this->belongsTo(Clinic::class);
+    }
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+    public function editor()
+    {
+        return $this->belongsTo(User::class, 'edit_by');
+    }
     public function getFirstImageUrlAttribute()
     {
         $imagesPath = storage_path("app/public/{$this->study_uri}");

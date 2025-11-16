@@ -20,7 +20,9 @@ class AdminUserController extends Controller
     {
         $users = Auth::user()->role === 'superadmin'
             ? User::with('clinic')->simplePaginate(10)
-            : User::with('clinic')->where('clinic_id', Auth::user()->clinic_id)->simplePaginate(10);
+            : User::with('clinic')
+                ->where('clinic_id', Auth::user()->clinic_id)
+                ->simplePaginate(10);
 
         return view('admin.users', compact('users'));
     }
@@ -28,18 +30,26 @@ class AdminUserController extends Controller
     // Formulario de creación
     public function create()
     {
-        $clinics = Auth::user()->role === 'superadmin' ? Clinic::all() : collect();
+        if (Auth::user()->role !== 'superadmin') {
+            abort(403, 'No tienes permiso para crear usuarios');
+        }
+
+        $clinics = Clinic::all();
         return view('admin.create', compact('clinics'));
     }
 
     // Almacenar nuevo usuario
     public function store(Request $request)
     {
+        if (Auth::user()->role !== 'superadmin') {
+            abort(403, 'No tienes permiso para crear usuarios');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'ci' => 'required|string|max:20|unique:users,ci',
-            'rol' => 'required|string|in:user,doctor,recepcionist,radiology,admin',
+            'rol' => 'required|string|in:user,doctor,recepcionist,radiology,admin,superadmin',
             'clinic_id' => 'nullable|exists:clinics,id',
         ]);
 
@@ -49,9 +59,7 @@ class AdminUserController extends Controller
             'ci' => $validated['ci'],
             'password' => Hash::make($validated['ci']), // Contraseña = CI
             'role' => $validated['rol'],
-            'clinic_id' => Auth::user()->role === 'superadmin'
-                ? ($validated['clinic_id'] ?? null)
-                : Auth::user()->clinic_id,
+            'clinic_id' => $validated['clinic_id'],
             'created_by' => Auth::id(),
             'edit_by' => Auth::id(),
         ]);
@@ -82,7 +90,7 @@ class AdminUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => "required|string|email|max:255|unique:users,email,{$user->id}",
             'ci' => "required|string|max:20|unique:users,ci,{$user->id}",
-            'rol' => 'required|string|in:user,doctor,recepcionist,radiology,admin',
+            'rol' => 'required|string|in:user,doctor,recepcionist,radiology,admin,superadmin',
             'clinic_id' => 'nullable|exists:clinics,id',
             'password' => 'nullable|string|min:8|confirmed',
         ]);
@@ -94,6 +102,7 @@ class AdminUserController extends Controller
         $user->clinic_id = Auth::user()->role === 'superadmin'
             ? ($validated['clinic_id'] ?? null)
             : Auth::user()->clinic_id;
+
         $user->edit_by = Auth::id();
 
         if (!empty($validated['password'])) {
