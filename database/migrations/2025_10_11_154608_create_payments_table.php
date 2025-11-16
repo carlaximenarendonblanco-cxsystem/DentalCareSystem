@@ -15,14 +15,14 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('treatment_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('treatment_id')->constrained('treatments')->cascadeOnDelete();
             $table->decimal('amount', 10, 2);
             $table->date('payment_date')->default(now());
             $table->string('method')->nullable();
             $table->string('notes')->nullable();
-            $table->foreignId('clinic_id')->constrained();
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('edit_by')->nullable();
+            $table->foreignId('clinic_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('edit_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

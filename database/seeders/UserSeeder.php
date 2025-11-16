@@ -25,5 +25,23 @@ class UserSeeder extends Seeder
                 'role' => 'superadmin',
             ]
         );
+        User::updateOrCreate(
+            ['email' => 'clinica1@gmail.com'],
+            [
+                'name' => 'Clinica1',
+                'ci' => '123451',
+                'password' => Hash::make('123451'),
+                'role' => 'admin',
+            ]
+        );
+        User::updateOrCreate(
+            ['email' => 'clinica2@gmail.com'],
+            [
+                'name' => 'Clinica2',
+                'ci' => '123452',
+                'password' => Hash::make('123452'),
+                'role' => 'admin',
+            ]
+        );
     }
 }

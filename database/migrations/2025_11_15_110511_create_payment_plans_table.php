@@ -20,8 +20,8 @@ return new class extends Migration
             $table->integer('installments')->default(1);
             $table->decimal('amount_per_installment', 10, 2)->nullable();
             $table->date('start_date')->nullable();
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('edit_by')->nullable();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('edit_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->foreign('budget_id')->references('id')->on('budgets')->cascadeOnDelete();
         });

@@ -23,9 +23,9 @@ return new class extends Migration
             $table->text('study_uri');
             $table->string('description')->nullable();
             $table->integer('image_count')->default(0);
-            $table->foreignId('clinic_id')->constrained();
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('edit_by')->nullable();
+            $table->foreignId('clinic_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('edit_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

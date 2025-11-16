@@ -27,9 +27,9 @@ return new class extends Migration
             $table->foreign('patient_id')->references('id')->on('patients')->nullOnDelete();
             $table->foreign('assigned_doctor')->references('id')->on('users')->nullOnDelete();
             $table->foreign('assigned_radiologist')->references('id')->on('users')->nullOnDelete();
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('edit_by')->nullable();
-            $table->foreignId('clinic_id')->constrained();
+            $table->foreignId('clinic_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('edit_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

@@ -18,11 +18,11 @@ return new class extends Migration
             $table->string('name_patient');
             $table->unsignedBigInteger('ci_patient')->unique();
             $table->date('birth_date');
-            $table->enum('gender',['Masculino','Femenino']);
+            $table->enum('gender', ['Masculino', 'Femenino']);
             $table->integer('patient_contact');
-            $table->foreignId('clinic_id')->constrained();
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('edit_by')->nullable();
+            $table->foreignId('clinic_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('edit_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

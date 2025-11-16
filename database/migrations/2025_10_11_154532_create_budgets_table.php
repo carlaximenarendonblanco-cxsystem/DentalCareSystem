@@ -1,38 +1,38 @@
-<?php
+    <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+    use Illuminate\Database\Migrations\Migration;
+    use Illuminate\Database\Schema\Blueprint;
+    use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    return new class extends Migration
     {
-        Schema::create('budgets', function (Blueprint $table) {
-            $table->id();
-            $table->string('budget');
-            $table->string('procedure')->nullable();
-            $table->string('description')->nullable();
-            $table->decimal('total_amount', 10, 2);
-            $table->foreignId('clinic_id')->constrained();
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('edit_by')->nullable();
-            $table->timestamps();
-        });
-    }
+        /**
+         * Run the migrations.
+         *
+         * @return void
+         */
+        public function up()
+        {
+            Schema::create('budgets', function (Blueprint $table) {
+                $table->id();
+                $table->string('budget');
+                $table->string('procedure')->nullable();
+                $table->string('description')->nullable();
+                $table->decimal('total_amount', 10, 2);
+                $table->foreignId('clinic_id')->constrained()->cascadeOnDelete();
+                $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+                $table->foreignId('edit_by')->nullable()->constrained('users')->nullOnDelete();
+                $table->timestamps();
+            });
+        }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Schema::dropIfExists('budgets');
-    }
-};
+        /**
+         * Reverse the migrations.
+         *
+         * @return void
+         */
+        public function down()
+        {
+            Schema::dropIfExists('budgets');
+        }
+    };
