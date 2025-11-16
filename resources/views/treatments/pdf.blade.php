@@ -86,7 +86,7 @@
         <div class="clinic-info">
             <p><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
             <p>{{ $clinic->address ?? 'Dirección no registrada' }}</p>
-            <p>Teléfono/CE: {{ $clinic->phone ?? 'N/A' }}</p>
+            <p>Teléfono: {{ $clinic->phone ?? 'N/A' }}</p>
         </div>
     </header>
 
@@ -94,9 +94,8 @@
     <h1>TRATAMIENTO DENTAL</h1>
 
     <div class="patient-info">
-        <p><strong>Paciente:</strong> {{ $treatment->name ?? 'N/A' }}</p>
-        <p><strong>CI:</strong> {{ $treatment->ci_patient ?? 'N/A' }}</p>
-        <p><strong>Fecha del presupuesto:</strong> {{ optional($treatment->created_at)->format('d/m/Y') ?? 'N/A' }}</p>
+        <h2><strong>Paciente:</strong> {{ $treatment->name ?? 'N/A' }}</h2>
+        <h2><strong>CI:</strong> {{ $treatment->ci_patient ?? 'N/A' }}</h2>
     </div>
 
     <table>
@@ -148,7 +147,6 @@
 
     <footer>
         <p>Fecha de emisión: {{ now()->format('d/m/Y H:i') }}</p>
-        <p>Emitido por: <strong>{{ $author ?? 'N/A' }}</strong></p>
     </footer>
 </body>
 </html>

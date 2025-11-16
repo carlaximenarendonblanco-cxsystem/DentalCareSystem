@@ -33,7 +33,7 @@
         <div><a href="{{ route('payments.show',$treatment->id) }}" class="flex justify-center hover:text-cyan-600">Bs. {{ number_format($treatment->discount, 2) }}</a></div>
         <div><a href="{{ route('payments.show',$treatment->id) }}" class="flex justify-center hover:text-cyan-600">Bs. {{ number_format($treatment->amount, 2) }}</a></div>
         <div><a href="{{ route('payments.show',$treatment->id) }}" class="flex justify-center hover:text-cyan-600">{{ $treatment->creator->name ?? '—' }}</a></div>
-        <div class="flex justify-center">
+        <div class="flex justify-end">
             <a href="{{ route('payments.show',$treatment->id) }}" class="botton3">{{ __('Pagos') }}</a>
         </div>
         <div class="flex justify-center">
