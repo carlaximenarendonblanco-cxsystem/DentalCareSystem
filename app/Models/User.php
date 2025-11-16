@@ -10,7 +10,6 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Clinic;
-use App\Models\User;
 
 class User extends Authenticatable
 {
@@ -68,5 +67,33 @@ class User extends Authenticatable
     public function editor()
     {
         return $this->belongsTo(User::class, 'edit_by');
+    }
+    public function budgets()
+    {
+        return $this->hasMany(User::class);
+    }
+    public function events()
+    {
+        return $this->hasMany(User::class);
+    }
+    public function multimediaFiles()
+    {
+        return $this->hasMany(User::class);
+    }
+    public function patients()
+    {
+        return $this->hasMany(User::class);
+    }
+    public function payments()
+    {
+        return $this->hasMany(User::class);
+    }
+    public function paymentPlans()
+    {
+        return $this->hasMany(User::class);
+    }
+    public function treatments()
+    {
+        return $this->hasMany(User::class);
     }
 }

@@ -14,21 +14,25 @@ class Treatment extends Model
 {
     use HasFactory;
 
-    protected $guarded=[];
+    protected $guarded = [];
 
-    public function payments(){
+    public function payments()
+    {
         return $this->hasMany(Payment::class);
     }
-    public function getPaidAmountAttribute(){
+    public function getPaidAmountAttribute()
+    {
         return $this->payments->sum('amount');
     }
-    public function getRemainingAmountAttribute(){
+    public function getRemainingAmountAttribute()
+    {
         return $this->amount - $this->paid_amount;
     }
-    public function patient():BelongsTo{
+    public function patient(): BelongsTo
+    {
         return $this->belongsTo(Patient::class, 'ci_patient', 'ci_patient');
     }
-        public function clinic()
+    public function clinic()
     {
         return $this->belongsTo(Clinic::class);
     }

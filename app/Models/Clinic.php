@@ -13,6 +13,34 @@ class Clinic extends Model
     {
         return $this->hasMany(User::class);
     }
+    public function budgets()
+    {
+        return $this->hasMany(User::class);
+    }
+    public function events()
+    {
+        return $this->hasMany(User::class);
+    }
+    public function multimediaFiles()
+    {
+        return $this->hasMany(User::class);
+    }
+    public function patients()
+    {
+        return $this->hasMany(User::class);
+    }
+    public function payments()
+    {
+        return $this->hasMany(User::class);
+    }
+    public function paymentPlans()
+    {
+        return $this->hasMany(User::class);
+    }
+    public function treatments()
+    {
+        return $this->hasMany(User::class);
+    }
     public function roomsList()
     {
         return range(1, $this->consulting_rooms);
