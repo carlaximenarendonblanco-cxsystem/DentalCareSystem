@@ -15,11 +15,7 @@
         color: #333;
       }
 
-      /* Contenedor del calendario */
-      #calendar {
-        overflow-x: auto;
-      }
-
+      /* Estilo general del calendario */
       .fc {
         background-color: #fff;
         border-radius: 8px;
@@ -101,48 +97,16 @@
         color: #444 !important;
         font-weight: 600;
       }
-
-      /* Eventos más compactos en móviles */
-      @media (max-width: 640px) {
-        .fc .fc-daygrid-event {
-          font-size: 0.65rem !important;
-          padding: 2px 3px !important;
-          line-height: 1.1 !important;
-          white-space: normal !important;
-        }
-
-        .fc .fc-event-title {
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        /* Botones más pequeños en móvil */
-        .fc-button {
-          padding: 3px 6px !important;
-          font-size: 0.75rem !important;
-        }
-
-        .fc-toolbar-title {
-          font-size: 1rem !important;
-        }
-
-        /* Limitar altura del calendario scrollable */
-        .fc-scroller {
-          max-height: 60vh;
-          overflow-y: auto;
-        }
-      }
     </style>
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        const events = @json($events);
+        // Asegúrate de que $events esté disponible y sea un JSON válido
+        const events = @json($events); 
         const calendarEl = document.getElementById('calendar');
 
-        const isMobile = window.innerWidth < 640;
-
         const calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: isMobile ? 'listWeek' : 'dayGridMonth',
+          initialView: 'dayGridMonth',
           locale: 'es',
           buttonText: {
             today: 'Hoy',
@@ -154,7 +118,7 @@
           headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: isMobile ? 'listWeek,dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay'
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
           },
           events: events,
           allDaySlot: false,
@@ -194,18 +158,18 @@
               const end = info.event.end;
               const room = info.event.extendedProps.room || '';
               const doctor = info.event.extendedProps.doctor || '';
-              const creator = info.event.extendedProps.creator_name || '';
               const formatHour = (date) => date ? date.toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: false
               }) : '';
-
-              const mobile = window.innerWidth < 640;
               info.el.innerHTML = `
-                <div style="font-size:${mobile ? '0.6rem' : '0.75rem'}; line-height:1.1; font-family:sans-serif; color:#000;">
-                  <b>${info.event.title}</b>
-                  ${!mobile ? `<br>${room}<br>Horario: ${formatHour(start)}-${formatHour(end)}<br>Doctor: ${doctor}<br><b>Creado por: ${creator}</b>` : ''}
+                <div style="font-size: 0.75rem; font-family: sans-serif; color: #000000ff;">
+                  <b>${info.event.title}</b><br>
+                  ${room}<br>
+                  Horario: ${formatHour(start)} - ${formatHour(end)}<br>
+                  Doctor: ${doctor}<br>
+                  <b>Creado por: ${info.event.extendedProps.creator_name}</b>
                 </div>`;
             }
           },
@@ -216,18 +180,10 @@
         });
 
         calendar.render();
-
-        // Actualizar vista si se redimensiona la pantalla
-        window.addEventListener('resize', () => {
-          const newMobile = window.innerWidth < 640;
-          if (newMobile !== isMobile) {
-            calendar.changeView(newMobile ? 'listWeek' : 'dayGridMonth');
-          }
-        });
       });
     </script>
-  </x-slot>
 
+  </x-slot>
   <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
       <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">

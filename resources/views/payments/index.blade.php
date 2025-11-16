@@ -23,39 +23,56 @@
 
 <h1 class="title1 text-center my-4">{{ __('Lista de Pagos') }}</h1>
 
-<!-- Payments list -->
-<div class="max-w-6xl mx-auto flex flex-col gap-3">
+<!-- Desktop Table -->
+<div class="hidden sm:block max-w-6xl mx-auto bg-white rounded-xl p-3 text-gray-900 shadow-md">
+    <div class="grid grid-cols-7 gap-4 border-b border-gray-300 pb-2 mb-3 text-center">
+        <h3 class="title4">{{ __('Fecha') }}</h3>
+        <h3 class="title4">{{ __('Nombre') }}</h3>
+        <h3 class="title4">{{ __('C.I.') }}</h3>
+        <h3 class="title4">{{ __('Total') }}</h3>
+        <h3 class="title4">{{ __('Monto') }}</h3>
+        <h3 class="title4">{{ __('Método') }}</h3>
+        <h3 class="title4">{{ __('Detalles') }}</h3>
+    </div>
 
     @forelse($payments as $p)
-    <div class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <!-- Información principal -->
-        <div class="flex flex-col sm:flex-row sm:gap-4 flex-1">
-            <div class="font-semibold text-gray-700">{{ $p->created_at->format('d/m/Y') }}</div>
-            <div class="text-gray-800 truncate">{{ $p->treatment->name ?? 'Sin tratamiento' }}</div>
-            <div class="text-gray-600 sm:hidden">Bs. {{ number_format($p->amount,2) }}</div>
-        </div>
-
-        <!-- Información secundaria visible solo en desktop -->
-        <div class="hidden sm:flex sm:items-center gap-4 text-gray-600">
-            <div>CI: {{ $p->treatment->ci_patient ?? '-' }}</div>
-            <div>Total: Bs. {{ number_format($p->treatment->amount,2) }}</div>
-            <div>Método: {{ $p->method ?? '-' }}</div>
-            <div>Notas: {{ $p->notes ?? '-' }}</div>
-        </div>
-
-        <!-- Link al detalle -->
-        <div>
-            <a href="{{ route('payments.show',$p->treatment->id) }}" 
-               class="text-cyan-600 hover:underline text-sm font-medium">{{ __('Ver') }}</a>
-        </div>
+    <div class="grid grid-cols-7 gap-4 items-center border-b border-gray-200 py-3 text-gray-800 hover:bg-gray-50 transition text-center">
+        <div><a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600">{{ $p->created_at->format('d/m/Y H:i') }}</a></div>
+        <div><a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600">{{ $p->treatment->name ?? 'Sin tratamiento' }}</a></div>
+        <div><a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600">{{ $p->treatment->ci_patient ?? '-' }}</a></div>
+        <div><a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600">Bs. {{ number_format($p->treatment->amount, 2) }}</a></div>
+        <div><a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600">Bs. {{ number_format($p->amount, 2) }}</a></div>
+        <div><a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600">{{ $p->method ?? '-' }}</a></div>
+        <div><a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600">{{ $p->notes ?? '-' }}</a></div>
     </div>
     @empty
     <p class="text-gray-600 text-center py-4">{{ __('Aún no se han registrado pagos.') }}</p>
     @endforelse
 
-    <!-- Pagination -->
     <div class="pt-4">
         {{ $payments->links() }}
     </div>
 </div>
+
+<!-- Mobile Cards -->
+<div class="sm:hidden max-w-6xl mx-auto flex flex-col gap-3">
+    @forelse($payments as $p)
+    <div class="bg-white rounded-lg shadow-md p-4 flex flex-col gap-2 hover:shadow-lg transition">
+        <div class="flex justify-between items-center">
+            <div class="font-semibold text-gray-700">{{ $p->created_at->format('d/m/Y') }}</div>
+            <a href="{{ route('payments.show',$p->treatment->id) }}" class="text-cyan-600 hover:underline text-sm font-medium">{{ __('Ver') }}</a>
+        </div>
+        <div class="text-gray-800 font-medium">{{ $p->treatment->name ?? 'Sin tratamiento' }}</div>
+        <div class="text-gray-600">Monto: Bs. {{ number_format($p->amount,2) }}</div>
+        <div class="text-gray-500 text-sm">Método: {{ $p->method ?? '-' }}</div>
+    </div>
+    @empty
+    <p class="text-gray-600 text-center py-4">{{ __('Aún no se han registrado pagos.') }}</p>
+    @endforelse
+
+    <div class="pt-4">
+        {{ $payments->links() }}
+    </div>
+</div>
+
 @endsection
