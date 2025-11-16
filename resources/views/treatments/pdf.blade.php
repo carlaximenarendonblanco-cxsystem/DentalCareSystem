@@ -94,8 +94,8 @@
     <h1>TRATAMIENTO DENTAL</h1>
 
     <div class="patient-info">
-        <h2><strong>Paciente:</strong> {{ $treatment->name ?? 'N/A' }}</h2>
-        <h2><strong>CI:</strong> {{ $treatment->ci_patient ?? 'N/A' }}</h2>
+        <h3><strong>Paciente:</strong> {{ $treatment->name ?? 'N/A' }}</h3>
+        <h3><strong>CI:</strong> {{ $treatment->ci_patient ?? 'N/A' }}</h3>
     </div>
 
     <table>
@@ -147,6 +147,7 @@
 
     <footer>
         <p>Fecha de emisión: {{ now()->format('d/m/Y H:i') }}</p>
+        <p>Emitido por: <strong>{{ $author ?? 'N/A' }}</strong></p>
     </footer>
 </body>
 </html>

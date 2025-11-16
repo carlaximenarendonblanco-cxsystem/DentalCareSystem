@@ -5,82 +5,48 @@
 @endsection
 
 @section('content')
-<div class="flex flex-col md:flex-row justify-between items-center p-5 pb-1 gap-3 md:gap-0">
-    <form method="POST" action="{{ route('payments.search', $treatment->id ?? 0) }}" class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+<div class="flex flex-wrap justify-between items-center p-5 gap-2">
+    <form method="POST" action="{{ route('payments.search', $treatment->id ?? 0) }}" class="flex gap-2 flex-1 min-w-[200px]">
         @csrf
         <input type="text" name="search" placeholder="{{ __('Buscar pago...') }}" 
-            class="px-4 py-2 rounded-full border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 w-full sm:w-auto"/>
-        <input class="botton2 w-full sm:w-auto" type="submit" value="{{ __('Buscar') }}" />
+            class="px-4 py-2 rounded-full border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 flex-1"/>
+        <input class="botton2" type="submit" value="{{ __('Buscar') }}" />
     </form>
 
-    <!-- Buttons -->
-    <div class="flex flex-col sm:flex-row justify-end gap-2 w-full sm:w-auto">
-        <a href="{{ route('treatments.index') }}" class="botton4 w-full sm:w-auto">{{ __('Tratamientos') }}</a>
+    <div class="flex gap-2 flex-wrap">
+        <a href="{{ route('treatments.index') }}" class="botton4">{{ __('Tratamientos') }}</a>
         @isset($treatment)
-        <a href="{{ route('payments.create', $treatment->id) }}" class="botton1 w-full sm:w-auto">{{ __('Añadir Pago') }}</a>
+        <a href="{{ route('payments.create', $treatment->id) }}" class="botton1">{{ __('Añadir Pago') }}</a>
         @endisset
     </div>
 </div>
 
-<!-- Main title -->
 <h1 class="title1 text-center my-4">{{ __('Lista de Pagos') }}</h1>
 
-<!-- Payments table -->
-<div class="max-w-6xl mx-auto bg-white rounded-xl p-3 text-gray-900 shadow-md">
-    <!-- Table header: ocultar en móvil -->
-    <div class="hidden md:grid grid-cols-7 gap-4 border-b border-gray-300 pb-2 mb-3 text-center font-semibold">
-        <h3>{{ __('Fecha') }}</h3>
-        <h3>{{ __('Nombre') }}</h3>
-        <h3>{{ __('C.I.') }}</h3>
-        <h3>{{ __('Total') }}</h3>
-        <h3>{{ __('Monto') }}</h3>
-        <h3>{{ __('Método') }}</h3>
-        <h3>{{ __('Detalles') }}</h3>
-    </div>
+<!-- Payments list -->
+<div class="max-w-6xl mx-auto flex flex-col gap-3">
 
-    <!-- Table body -->
     @forelse($payments as $p)
-    <div class="grid md:grid-cols-7 gap-2 md:gap-4 items-center border-b border-gray-200 py-3 text-gray-800 hover:bg-gray-50 transition">
-        <!-- Fecha -->
-        <div class="flex justify-between md:justify-center">
-            <span class="font-semibold md:hidden">{{ __('Fecha: ') }}</span>
-            <a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600 text-center md:text-left">{{ $p->created_at->format('d/m/Y H:i') }}</a>
+    <div class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <!-- Información principal -->
+        <div class="flex flex-col sm:flex-row sm:gap-4 flex-1">
+            <div class="font-semibold text-gray-700">{{ $p->created_at->format('d/m/Y') }}</div>
+            <div class="text-gray-800 truncate">{{ $p->treatment->name ?? 'Sin tratamiento' }}</div>
+            <div class="text-gray-600 sm:hidden">Bs. {{ number_format($p->amount,2) }}</div>
         </div>
 
-        <!-- Nombre -->
-        <div class="flex justify-between md:justify-center">
-            <span class="font-semibold md:hidden">{{ __('Nombre: ') }}</span>
-            <a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600 text-center md:text-left">{{ $p->treatment->name ?? 'Sin tratamiento' }}</a>
+        <!-- Información secundaria visible solo en desktop -->
+        <div class="hidden sm:flex sm:items-center gap-4 text-gray-600">
+            <div>CI: {{ $p->treatment->ci_patient ?? '-' }}</div>
+            <div>Total: Bs. {{ number_format($p->treatment->amount,2) }}</div>
+            <div>Método: {{ $p->method ?? '-' }}</div>
+            <div>Notas: {{ $p->notes ?? '-' }}</div>
         </div>
 
-        <!-- CI -->
-        <div class="flex justify-between md:justify-center">
-            <span class="font-semibold md:hidden">{{ __('C.I.: ') }}</span>
-            <a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600 text-center md:text-left">{{ $p->treatment->ci_patient ?? '-' }}</a>
-        </div>
-
-        <!-- Total -->
-        <div class="flex justify-between md:justify-center">
-            <span class="font-semibold md:hidden">{{ __('Total: ') }}</span>
-            <a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600 text-center md:text-left">Bs. {{ number_format($p->treatment->amount, 2) }}</a>
-        </div>
-
-        <!-- Monto -->
-        <div class="flex justify-between md:justify-center">
-            <span class="font-semibold md:hidden">{{ __('Monto: ') }}</span>
-            <a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600 text-center md:text-left">Bs. {{ number_format($p->amount, 2) }}</a>
-        </div>
-
-        <!-- Método -->
-        <div class="flex justify-between md:justify-center">
-            <span class="font-semibold md:hidden">{{ __('Método: ') }}</span>
-            <a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600 text-center md:text-left">{{ $p->method ?? '-' }}</a>
-        </div>
-
-        <!-- Detalles -->
-        <div class="flex justify-between md:justify-center">
-            <span class="font-semibold md:hidden">{{ __('Detalles: ') }}</span>
-            <a href="{{ route('payments.show',$p->treatment->id) }}" class="hover:text-cyan-600 text-center md:text-left">{{ $p->notes ?? '-' }}</a>
+        <!-- Link al detalle -->
+        <div>
+            <a href="{{ route('payments.show',$p->treatment->id) }}" 
+               class="text-cyan-600 hover:underline text-sm font-medium">{{ __('Ver') }}</a>
         </div>
     </div>
     @empty
