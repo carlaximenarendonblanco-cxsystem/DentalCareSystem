@@ -1,17 +1,18 @@
 @extends('layouts._partials.layout')
 @section('title','Pagos')
 @section('subtitle')
-    {{ __('Pagos') }}
+{{ __('Pagos') }}
 @endsection
 
 @section('content')
 <div class="flex flex-wrap justify-between items-center p-5 gap-2">
-    <form method="POST" action="{{ route('payments.search', $treatment->id ?? 0) }}" class="flex gap-2 flex-1 min-w-[200px]">
+    <form method="POST" action="{{ route('payments.search', $treatment->id ?? 0) }}" class="flex gap-2 items-center flex-wrap">
         @csrf
-        <input type="text" name="search" placeholder="{{ __('Buscar pago...') }}" 
-            class="px-4 py-2 rounded-full border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 flex-1"/>
-        <input class="botton2" type="submit" value="{{ __('Buscar') }}" />
+        <input type="text" name="search" placeholder="{{ __('Buscar pago...') }}"
+            class="px-4 py-2 rounded-full border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-cyan-500 w-full sm:w-auto sm:flex-1 max-w-xs" />
+        <input class="botton2 px-4 py-2 rounded-full" type="submit" value="{{ __('Buscar') }}" />
     </form>
+
 
     <div class="flex gap-2 flex-wrap">
         <a href="{{ route('treatments.index') }}" class="botton4">{{ __('Tratamientos') }}</a>
@@ -74,5 +75,4 @@
         {{ $payments->links() }}
     </div>
 </div>
-
 @endsection

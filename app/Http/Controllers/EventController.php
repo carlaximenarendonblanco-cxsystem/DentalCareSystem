@@ -15,12 +15,23 @@ class EventController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role === 'superadmin') {
-            $events = Event::orderBy('start_date', 'ASC')->get();
-        } else {
-            $events = Event::where('clinic_id', $user->clinic_id)
-                ->orderBy('start_date', 'ASC')
-                ->get();
+        $all_events = $user->role === 'superadmin'
+            ? Event::all()
+            : Event::where('clinic_id', $user->clinic_id)->get();
+
+        $events = [];
+
+        foreach ($all_events as $event) {
+            $events[] = [
+                'id' => $event->id,
+                'title' => $event->event,
+                'start' => Carbon::parse($event->start_date)->format('Y-m-d\TH:i:s'),
+                'end' => Carbon::parse($event->end_date)->format('Y-m-d\TH:i:s'),
+                'room' => $event->room,
+                'allDay' => false,
+                'doctor' => $event->assignedDoctor->name ?? 'No asignado',
+                'creator_name' => $event->creator->name ?? 'Sin información',
+            ];
         }
 
         return view('events.index', compact('events'));
@@ -61,7 +72,7 @@ class EventController extends Controller
         ]);
 
         $start = Carbon::parse($request->start_date);
-        $duration = $request->duration_minutes + 10; // se suma 10 min extra
+        $duration = $request->duration_minutes + 10; // suma de 10 minutos extra
         $end = $start->copy()->addMinutes($duration);
 
         $user = Auth::user();
@@ -74,7 +85,7 @@ class EventController extends Controller
                     ->orWhereBetween('end_date', [$start, $end])
                     ->orWhere(function ($query) use ($start, $end) {
                         $query->where('start_date', '<=', $start)
-                            ->where('end_date', '>=', $end);
+                              ->where('end_date', '>=', $end);
                     });
             })
             ->exists();
@@ -173,31 +184,5 @@ class EventController extends Controller
         $event->delete();
 
         return redirect()->route('events.index')->with('danger', 'Cita eliminada.');
-    }
-
-    public function calendar()
-    {
-        $user = Auth::user();
-
-        $all_events = $user->role === 'superadmin'
-            ? Event::all()
-            : Event::where('clinic_id', $user->clinic_id)->get();
-
-        $events = [];
-
-        foreach ($all_events as $event) {
-            $events[] = [
-                'id' => $event->id,
-                'title' => $event->event,
-                'start' => $event->start_date->format('Y-m-d\TH:i:s'),
-                'end' => $event->end_date->format('Y-m-d\TH:i:s'),
-                'room' => $event->room,
-                'allDay' => false,
-                'doctor' => $event->assignedDoctor->name ?? 'No asignado',
-                'creator_name' => $event->creator->name ?? 'Sin información',
-            ];
-        }
-
-        return view('events.index', compact('events'));
     }
 }
