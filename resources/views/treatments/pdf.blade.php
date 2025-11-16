@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Tratamiento {{ $treatment->id }}</title>
@@ -10,63 +11,77 @@
             margin: 30px;
             color: #333;
         }
+
         header {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
         }
+
         header img {
             max-height: 60px;
             margin-right: 15px;
         }
+
         header .clinic-info p {
             margin: 2px 0;
             font-size: 12px;
         }
+
         h1 {
             text-align: center;
             color: #040035ff;
             margin: 0 0 15px 0;
             font-size: 18px;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #333;
             padding: 6px;
             text-align: left;
         }
+
         th {
             background-color: #f0f0f0;
         }
+
         .right {
             text-align: right;
         }
+
         .totals td {
             font-weight: bold;
         }
+
         footer {
             margin-top: 30px;
             text-align: center;
             font-size: 10px;
             color: #666;
         }
+
         .info {
             margin-bottom: 10px;
             font-size: 12px;
         }
+
         .patient-info p {
             margin: 2px 0;
         }
     </style>
 </head>
+
 <body>
     <header>
         @if(!empty($clinic->logo) && file_exists(storage_path('app/'.$clinic->logo)))
-            <img src="{{ storage_path('app/' . $clinic->logo) }}" alt="Logo Clínica">
+        <img src="{{ storage_path('app/' . $clinic->logo) }}" alt="Logo Clínica">
         @endif
         <div class="clinic-info">
             <p><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
@@ -75,9 +90,8 @@
         </div>
     </header>
 
-    <h1>Presupuesto de Tratamiento</h1>
-
-    <p class="info"><strong>Nota:</strong> Los valores presentados representan un <em>aproximado del costo del tratamiento</em>.</p>
+    <h1>PRESUPUESTO</h1>
+    <h1>TRATAMIENTO DENTAL</h1>
 
     <div class="patient-info">
         <p><strong>Paciente:</strong> {{ $treatment->name ?? 'N/A' }}</p>
@@ -97,21 +111,21 @@
         </thead>
         <tbody>
             @php
-                $budgetCodes = json_decode($treatment->budget_codes, true) ?? [];
+            $budgetCodes = json_decode($treatment->budget_codes, true) ?? [];
             @endphp
 
             @foreach ($budgets as $budget)
-                @php
-                    $quantity = $budgetCodes[$budget->id] ?? 1;
-                    $lineTotal = $budget->total_amount * $quantity;
-                @endphp
-                <tr>
-                    <td>{{ $budget->budget }}</td>
-                    <td>{{ $budget->description ?? 'N/A' }}</td>
-                    <td class="right">{{ $quantity }}</td>
-                    <td class="right">{{ number_format($budget->total_amount ?? 0, 2) }}</td>
-                    <td class="right">{{ number_format($lineTotal ?? 0, 2) }}</td>
-                </tr>
+            @php
+            $quantity = $budgetCodes[$budget->id] ?? 1;
+            $lineTotal = $budget->total_amount * $quantity;
+            @endphp
+            <tr>
+                <td>{{ $budget->budget }}</td>
+                <td>{{ $budget->description ?? 'N/A' }}</td>
+                <td class="right">{{ $quantity }}</td>
+                <td class="right">{{ number_format($budget->total_amount ?? 0, 2) }}</td>
+                <td class="right">{{ number_format($lineTotal ?? 0, 2) }}</td>
+            </tr>
             @endforeach
 
             <tr class="totals">
@@ -130,6 +144,7 @@
     </table>
 
     <p><strong>Detalles:</strong> {{ $treatment->details ?? 'Sin información adicional' }}</p>
+    <p class="info"><strong>Nota:</strong> Los valores presentados representan un <em>aproximado del costo del tratamiento</em>.</p>
 
     <footer>
         <p>Fecha de emisión: {{ now()->format('d/m/Y H:i') }}</p>

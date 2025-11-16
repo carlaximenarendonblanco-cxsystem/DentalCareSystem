@@ -104,13 +104,15 @@ class TreatmentController extends Controller
 
         // PDF
         $budgets = Budget::whereIn('id', array_keys($budgetCodes))->get();
+        $clinic = $user->clinic;
         $pdf = Pdf::loadView('treatments.pdf', [
             'treatment' => $treatment,
             'budgets'   => $budgets,
             'author'    => $user->name,
-        ])->setPaper('a4', 'portrait');
+            'clinic'    => $clinic,
+        ])->setPaper('letter', 'portrait');
 
-        $fileName = 'treatment_' . $treatment->id . '.pdf';
+        $fileName = 'Cotizacion' . $treatment->name . $treatment->id . '.pdf';
         $storagePath = 'treatments/' . $fileName;
 
         Storage::put($storagePath, $pdf->output());
