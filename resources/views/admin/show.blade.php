@@ -37,7 +37,19 @@
             <label class="title4 block mb-2">{{ __('Rol') }}:</label>
             <p class="text-gray-700">{{ ucfirst($user->role) }}</p>
         </div>
-        @auth
+        {{-- Creado por --}}
+        <div>
+            <label class="title4 block mb-2">{{ __('Creado por') }}:</label>
+            <p class="text-gray-700">{{ $user->created_by ? App\Models\User::find($user->created_by)->name : __('No disponible') }}</p>
+        </div>
+
+        {{-- Editado por --}}
+        <div>
+            <label class="title4 block mb-2">{{ __('Última edición por') }}:</label>
+            <p class="text-gray-700">{{ $user->edit_by ? App\Models\User::find($user->edit_by)->name : __('No disponible') }}</p>
+        </div>
+    </div>
+    @auth
         @if(auth()->user()->role === 'superadmin')
         <!-- Información del sistema -->
         <div class="mt-10 mb-5">
@@ -70,18 +82,5 @@
         </div>
         @endif
         @endauth
-
-        {{-- Creado por --}}
-        <div>
-            <label class="title4 block mb-2">{{ __('Creado por') }}:</label>
-            <p class="text-gray-700">{{ $user->created_by ? App\Models\User::find($user->created_by)->name : __('No disponible') }}</p>
-        </div>
-
-        {{-- Editado por --}}
-        <div>
-            <label class="title4 block mb-2">{{ __('Última edición por') }}:</label>
-            <p class="text-gray-700">{{ $user->edit_by ? App\Models\User::find($user->edit_by)->name : __('No disponible') }}</p>
-        </div>
-    </div>
 </div>
 @endsection

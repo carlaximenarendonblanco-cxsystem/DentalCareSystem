@@ -60,40 +60,4 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Clinic::class);
     }
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-    public function editor()
-    {
-        return $this->belongsTo(User::class, 'edit_by');
-    }
-    public function budgets()
-    {
-        return $this->hasMany(User::class);
-    }
-    public function events()
-    {
-        return $this->hasMany(User::class);
-    }
-    public function multimediaFiles()
-    {
-        return $this->hasMany(User::class);
-    }
-    public function patients()
-    {
-        return $this->hasMany(User::class);
-    }
-    public function payments()
-    {
-        return $this->hasMany(User::class);
-    }
-    public function paymentPlans()
-    {
-        return $this->hasMany(User::class);
-    }
-    public function treatments()
-    {
-        return $this->hasMany(User::class);
-    }
 }

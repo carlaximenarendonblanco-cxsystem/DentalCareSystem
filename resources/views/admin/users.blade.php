@@ -25,7 +25,7 @@
             @auth
                 @if(Auth::user()->role === 'admin' || Auth::user()->role === 'superadmin')
                     {{-- Editar (opcional) --}}
-                    <a href="{{ route('admin.edit', $user->id) }}" class="botton2">{{ __('Editar') }}</a>
+                    <a href="{{ route('admin.edit', $user->id) }}" class="botton3">{{ __('Editar') }}</a>
                     <form method="POST" action="{{ route('admin.destroy', $user->id) }}"
                           onsubmit="return confirm('{{ __('¿Seguro que deseas eliminar este usuario?') }}');">
                         @csrf

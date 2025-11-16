@@ -35,7 +35,7 @@
 
         <div class="flex flex-wrap gap-4 mb-4">
             <div class="flex-1 min-w-[200px]">
-                <label class="title4 block mb-1">{{ __('Hora de Inicio') }}:</label>
+                <label class="title4 block mb-1">{{ __('Fecha y hora') }}:</label>
                 <input type="datetime-local" name="start_date" value="{{ old('start_date') }}" class="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:border-cyan-500 focus:ring focus:ring-cyan-300 focus:ring-opacity-50 transition duration-200 ease-in-out text-gray-700 bg-white" />
                 @error('start_date') <p class="error mt-1">{{ $message }}</p> @enderror
             </div>

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Budget;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class BudgetController extends Controller
@@ -12,13 +12,13 @@ class BudgetController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role === 'superadmin') {
-            $budgets = Budget::orderBy('name_patient', 'ASC')->paginate(10);
-        } else {
-            $budgets = Budget::where('clinic_id', $user->clinic_id)
-                ->orderBy('name_patient', 'ASC')
-                ->paginate(10);
+        $query = Budget::with(['creator', 'editor']);
+
+        if ($user->role !== 'superadmin') {
+            $query->where('clinic_id', $user->clinic_id);
         }
+
+        $budgets = $query->orderBy('budget', 'ASC')->paginate(10);
 
         return view('budgets.index', compact('budgets'));
     }
@@ -30,78 +30,70 @@ class BudgetController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'budget' => 'required|string|max:100',
+        $validated = $request->validate([
+            'budget' => 'required|string|max:255',
             'procedure' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
+            'description' => 'nullable|string',
             'total_amount' => 'required|numeric|min:0',
         ]);
 
-        $data = $request->all();
-        $data['clinic_id'] = Auth::user()->clinic_id;   // asignar clínica automáticamente
-        $data['created_by'] = Auth::id();
+        $validated['clinic_id'] = Auth::user()->clinic_id;
+        $validated['created_by'] = Auth::id();
 
-        Budget::create($data);
+        Budget::create($validated);
 
-        return redirect()->route('budgets.index')->with('success', 'Presupuesto creado exitosamente.');
+        return redirect()->route('budgets.index')->with('success', 'Presupuesto creado correctamente.');
     }
 
-    public function show(Budget $budget)
+    public function show($id)
     {
+        $budget = Budget::with(['creator', 'editor'])->findOrFail($id);
         return view('budgets.show', compact('budget'));
     }
 
-    public function edit(Budget $budget)
+    public function edit($id)
     {
+        $budget = Budget::findOrFail($id);
+
+        if (Auth::user()->role !== 'superadmin' && $budget->clinic_id !== Auth::user()->clinic_id) {
+            abort(403, 'Acceso no autorizado');
+        }
+
         return view('budgets.edit', compact('budget'));
     }
 
-    public function update(Request $request, Budget $budget)
+    public function update(Request $request, $id)
     {
-        $request->validate([
-            'budget' => 'required|string|max:100',
+        $budget = Budget::findOrFail($id);
+
+        if (Auth::user()->role !== 'superadmin' && $budget->clinic_id !== Auth::user()->clinic_id) {
+            abort(403, 'Acceso no autorizado');
+        }
+
+        $validated = $request->validate([
+            'budget' => 'required|string|max:255',
             'procedure' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
+            'description' => 'nullable|string',
             'total_amount' => 'required|numeric|min:0',
         ]);
 
-        $data = $request->all();
-        $data['edit_by'] = Auth::id(); // registrar quien editó
+        $validated['edit_by'] = Auth::id();
 
-        $budget->update($data);
+        $budget->update($validated);
 
-        return redirect()->route('budgets.index')
-            ->with('success', 'Presupuesto actualizado exitosamente.');
+        return redirect()->route('budgets.index')->with('success', 'Presupuesto actualizado correctamente.');
     }
 
-    public function destroy(Budget $budget)
+    public function destroy($id)
     {
-        $budget->delete();
+        $budget = Budget::findOrFail($id);
 
-        return redirect()->route('budgets.index')
-            ->with('danger', 'Presupuesto eliminado exitosamente.');
-    }
-
-    public function search(Request $request)
-    {
-        $user = Auth::user();
-        $search = $request->input('search');
-
-        $query = Budget::query();
-
-        // Búsqueda por campos
-        $query->where(function($q) use ($search) {
-            $q->where('budget', 'LIKE', "%{$search}%")
-              ->orWhere('procedure', 'LIKE', "%{$search}%");
-        });
-
-        // Aplicar filtro por clínica para todos excepto superadmin
-        if ($user->role !== 'superadmin') {
-            $query->where('clinic_id', $user->clinic_id);
+        if (Auth::user()->role !== 'superadmin' && $budget->clinic_id !== Auth::user()->clinic_id) {
+            abort(403, 'Acceso no autorizado');
         }
 
-        $budgets = $query->paginate(10);
+        $budget->delete();
 
-        return view('budgets.index', compact('budgets'));
+        return redirect()->route('budgets.index')->with('success', 'Presupuesto eliminado correctamente.');
     }
 }
