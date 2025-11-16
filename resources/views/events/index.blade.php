@@ -15,19 +15,13 @@
         color: #333;
       }
 
-      /* Estilo general del calendario */
+      /* General calendar style */
       .fc {
         background-color: #fff;
         border-radius: 8px;
       }
 
-      .fc-scrollgrid,
-      .fc-scrollgrid-section,
-      .fc-scrollgrid-sync-table {
-        border-color: #b0b0b0 !important;
-      }
-
-      .fc-daygrid-day-frame {
+      .fc-scrollgrid, .fc-scrollgrid-section, .fc-scrollgrid-sync-table {
         border-color: #b0b0b0 !important;
       }
 
@@ -40,7 +34,7 @@
         background-color: rgba(17, 140, 255, 0.23) !important;
       }
 
-      /* Eventos por sala */
+      /* Event colors by room */
       .fc-event.Sala-1 {
         background-color: rgba(91, 101, 255, 0.59) !important;
         border-color: rgba(35, 31, 255, 0.7) !important;
@@ -57,6 +51,7 @@
         cursor: pointer !important;
       }
 
+      /* Buttons */
       .fc-button {
         background-color: #fff !important;
         color: #333 !important;
@@ -65,7 +60,7 @@
         padding: 5px 10px !important;
         font-weight: 500;
         transition: all 0.2s ease-in-out;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       }
 
       .fc-button:hover {
@@ -74,40 +69,39 @@
         border-color: #7bb0ffff !important;
       }
 
-      .fc-button-primary:not(:disabled).fc-button-active,
-      .fc-button-primary:not(:disabled):active {
-        background-color: #cde8ff !important;
-        color: #000 !important;
-        border-color: #7bb0ffff !important;
+      /* Smaller buttons and font on mobile */
+      @media (max-width: 768px) {
+        .fc-toolbar .fc-button {
+          padding: 3px 6px !important;
+          font-size: 0.7rem !important;
+        }
       }
 
-      /* Iconos de flechas */
-      .fc-icon {
-        color: #333 !important;
-        font-size: 1rem;
-      }
-
-      /* Título y encabezados de días */
-      .fc-toolbar-title {
-        color: #222222ff !important;
-        font-weight: 600 !important;
-      }
-
-      .fc-col-header-cell-cushion {
-        color: #444 !important;
-        font-weight: 600;
+      /* Toolbar title smaller on mobile */
+      @media (max-width: 768px) {
+        .fc-toolbar-title {
+          font-size: 1rem !important;
+        }
       }
     </style>
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        // Asegúrate de que $events esté disponible y sea un JSON válido
-        const events = @json($events); 
+        const events = @json($events);
         const calendarEl = document.getElementById('calendar');
 
+        // Detect mobile
+        const isMobile = window.innerWidth <= 768;
+        const initialView = isMobile ? 'timeGridDay' : 'dayGridMonth'; // solo un día en móvil
+
         const calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'dayGridMonth',
+          initialView: initialView,
           locale: 'es',
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: isMobile ? 'timeGridDay,timeGridWeek' : 'dayGridMonth,timeGridWeek,timeGridDay'
+          },
           buttonText: {
             today: 'Hoy',
             month: 'Mes',
@@ -115,63 +109,13 @@
             day: 'Día',
             list: 'Lista'
           },
-          headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-          },
           events: events,
           allDaySlot: false,
-          slotLabelFormat: {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-          },
+          slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
           eventClassNames: function(arg) {
             if (arg.event.extendedProps.room === 'Consultorio 1') return ['Sala-1'];
             if (arg.event.extendedProps.room === 'Consultorio 2') return ['Sala-2'];
             return [];
-          },
-          eventContent: function(arg) {
-            if (arg.view.type !== 'dayGridMonth') {
-              const start = arg.event.start;
-              const end = arg.event.end;
-              const doctor = arg.event.extendedProps.doctor || '';
-              const formatHour = (date) => date ? date.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-              }) : '';
-              return {
-                html: `
-                <div style="font-size: 0.7rem; font-family: sans-serif; color: #000000ff;">
-                  <b>${arg.event.title}</b> 
-                  ${formatHour(start)} - ${formatHour(end)}<br>
-                  Doctor: ${doctor}
-                </div>`
-              };
-            }
-          },
-          eventDidMount: function(info) {
-            if (info.view.type === 'dayGridMonth') {
-              const start = info.event.start;
-              const end = info.event.end;
-              const room = info.event.extendedProps.room || '';
-              const doctor = info.event.extendedProps.doctor || '';
-              const formatHour = (date) => date ? date.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-              }) : '';
-              info.el.innerHTML = `
-                <div style="font-size: 0.75rem; font-family: sans-serif; color: #000000ff;">
-                  <b>${info.event.title}</b><br>
-                  ${room}<br>
-                  Horario: ${formatHour(start)} - ${formatHour(end)}<br>
-                  Doctor: ${doctor}<br>
-                  <b>Creado por: ${info.event.extendedProps.creator_name}</b>
-                </div>`;
-            }
           },
           eventClick: function(info) {
             const eventId = info.event.id;
@@ -180,10 +124,19 @@
         });
 
         calendar.render();
+
+        // Re-render on resize to switch view
+        window.addEventListener('resize', () => {
+          const isMobileResize = window.innerWidth <= 768;
+          const newView = isMobileResize ? 'timeGridDay' : 'dayGridMonth';
+          if (calendar.view.type !== newView) {
+            calendar.changeView(newView);
+          }
+        });
       });
     </script>
-
   </x-slot>
+
   <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
       <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">

@@ -275,3 +275,10 @@
 .card2:hover{
     border: 5px solid var(--purple-color);
 }
+/* Reducir tamaño de botones en pantallas pequeñas */
+@media (max-width: 640px) {
+    .botton1, .botton2, .botton3, .botton4, .botton5, .bottonDelete {
+        font-size: 12px;      /* letra más pequeña */
+        padding: 5px 12px;    /* menos padding */
+    }
+}
