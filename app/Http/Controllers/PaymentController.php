@@ -5,19 +5,29 @@ namespace App\Http\Controllers;
 use App\Models\Payment;
 use App\Models\Treatment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
     /**
-     * Superadmin ve todo.
-     * Usuario normal (doctor, admin) SOLO ve pagos de su clínica.
+     * Aplica filtro por rol/clinic al query pasado.
+     * Si el usuario es superadmin devuelve el query sin cambios.
+     * Si no, agrega where('clinic_id', user->clinic_id).
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     private function scopeByRole($query)
     {
-        $user = auth()->user();
+        $user = Auth::user();
+
+        if (!$user) {
+            // por seguridad, devolver query vacío si no hay user
+            return $query->whereRaw('1 = 0');
+        }
 
         if ($user->role === 'superadmin') {
-            return $query; // superadmin ve todo
+            return $query;
         }
 
         return $query->where('clinic_id', $user->clinic_id);
@@ -27,6 +37,7 @@ class PaymentController extends Controller
     {
         $payments = $this->scopeByRole(Payment::query())
             ->with('treatment')
+            ->orderBy('created_at', 'desc')
             ->simplePaginate(25);
 
         return view('payments.index', compact('payments'));
@@ -34,9 +45,10 @@ class PaymentController extends Controller
 
     public function show($treatment_id)
     {
-        $treatment = $this->scopeByRole(Treatment::query())
-            ->findOrFail($treatment_id);
+        // Obtener tratamiento respetando scope
+        $treatment = $this->scopeByRole(Treatment::query())->findOrFail($treatment_id);
 
+        // Si llegamos hasta aquí, el usuario puede ver ese tratamiento
         $payments = $treatment->payments()->latest()->get();
         $paid = $payments->sum('amount');
         $remaining = $treatment->amount - $paid;
@@ -46,8 +58,7 @@ class PaymentController extends Controller
 
     public function create($treatment_id)
     {
-        $treatment = $this->scopeByRole(Treatment::query())
-            ->findOrFail($treatment_id);
+        $treatment = $this->scopeByRole(Treatment::query())->findOrFail($treatment_id);
 
         $paid = $treatment->payments()->sum('amount');
         $remaining = $treatment->amount - $paid;
@@ -57,10 +68,10 @@ class PaymentController extends Controller
 
     public function store(Request $request, $treatment_id)
     {
-        $treatment = $this->scopeByRole(Treatment::query())
-            ->findOrFail($treatment_id);
+        // Obtener tratamiento dentro del scope
+        $treatment = $this->scopeByRole(Treatment::query())->findOrFail($treatment_id);
 
-        $request->validate([
+        $data = $request->validate([
             'amount' => 'required|numeric|min:0.01',
             'method' => 'nullable|string|max:50',
             'notes'  => 'nullable|string|max:255',
@@ -69,16 +80,18 @@ class PaymentController extends Controller
         $paid = $treatment->payments()->sum('amount');
         $remaining = $treatment->amount - $paid;
 
-        if ($request->amount > $remaining) {
-            return back()->with('error', 'El pago excede el monto restante.');
+        if ($data['amount'] > $remaining) {
+            return back()->withInput()->withErrors(['amount' => 'El pago excede el monto restante.']);
         }
 
-        Payment::create([
+        // Guardar con clinic_id y created_by
+        $payment = Payment::create([
             'treatment_id' => $treatment->id,
-            'clinic_id' => $treatment->clinic_id,      // ← IMPORTANTE
-            'amount' => $request->amount,
-            'method' => $request->method ?? 'Efectivo',
-            'notes' => $request->notes,
+            'clinic_id'    => $treatment->clinic_id,
+            'amount'       => $data['amount'],
+            'method'       => $data['method'] ?? 'Efectivo',
+            'notes'        => $data['notes'] ?? null,
+            'created_by'   => Auth::id(),
         ]);
 
         return redirect()->route('payments.show', $treatment->id)
@@ -87,6 +100,7 @@ class PaymentController extends Controller
 
     public function destroy($treatment_id, $id)
     {
+        // localizamos el pago solo dentro del scope
         $payment = $this->scopeByRole(Payment::query())
             ->where('treatment_id', $treatment_id)
             ->findOrFail($id);
@@ -100,8 +114,7 @@ class PaymentController extends Controller
     {
         $search = trim($request->input('search'));
 
-        $query = $this->scopeByRole(Payment::query())
-            ->with('treatment');
+        $query = $this->scopeByRole(Payment::query())->with('treatment');
 
         if ($treatment_id) {
             $query->where('treatment_id', $treatment_id);
@@ -111,7 +124,7 @@ class PaymentController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->whereHas('treatment', function ($t) use ($search) {
                     $t->where('name', 'like', "%{$search}%")
-                        ->orWhere('ci_patient', 'like', "%{$search}%");
+                      ->orWhere('ci_patient', 'like', "%{$search}%");
                 })
                 ->orWhere('method', 'like', "%{$search}%")
                 ->orWhere('notes', 'like', "%{$search}%");
