@@ -6,9 +6,9 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 13px;
+            font-size: 12px;
             margin: 30px;
-            color: #000;
+            color: #333;
         }
         header {
             display: flex;
@@ -16,24 +16,18 @@
             margin-bottom: 20px;
         }
         header img {
-            max-height: 80px;
+            max-height: 60px;
             margin-right: 15px;
-        }
-        header .clinic-info {
-            font-size: 16px;
-            font-weight: bold;
         }
         header .clinic-info p {
             margin: 2px 0;
-            font-size: 13px;
+            font-size: 12px;
         }
         h1 {
             text-align: center;
-            margin: 0 0 20px 0;
-            font-size: 20px;
-            font-weight: bold;
-            text-transform: uppercase;
-            color: #000;
+            color: #040035ff;
+            margin: 0 0 15px 0;
+            font-size: 18px;
         }
         table {
             width: 100%;
@@ -41,30 +35,28 @@
             margin-top: 10px;
         }
         th, td {
-            border: 1px solid #000;
-            padding: 8px;
+            border: 1px solid #333;
+            padding: 6px;
             text-align: left;
         }
         th {
             background-color: #f0f0f0;
-            font-weight: bold;
         }
         .right {
             text-align: right;
         }
         .totals td {
             font-weight: bold;
-            background-color: #f9f9f9;
         }
         footer {
             margin-top: 30px;
             text-align: center;
-            font-size: 11px;
-            color: #000;
+            font-size: 10px;
+            color: #666;
         }
         .info {
-            margin-bottom: 15px;
-            font-size: 13px;
+            margin-bottom: 10px;
+            font-size: 12px;
         }
         .patient-info p {
             margin: 2px 0;
@@ -73,24 +65,24 @@
 </head>
 <body>
     <header>
-        @if($clinic->logo)
+        @if(!empty($clinic->logo) && file_exists(storage_path('app/'.$clinic->logo)))
             <img src="{{ storage_path('app/' . $clinic->logo) }}" alt="Logo Clínica">
         @endif
         <div class="clinic-info">
-            <p>{{ $clinic->name ?? 'Nombre de la Clínica' }}</p>
+            <p><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
             <p>{{ $clinic->address ?? 'Dirección no registrada' }}</p>
-            <p>Teléfono: {{ $clinic->phone ?? 'N/A' }}</p>
+            <p>Teléfono/CE: {{ $clinic->phone ?? 'N/A' }}</p>
         </div>
     </header>
 
-    <h1>PRESUPUESTO DE TRATAMIENTO</h1>
+    <h1>Presupuesto de Tratamiento</h1>
 
-    <p class="info"><strong>Nota:</strong> Los valores presentados a continuación representan un <em>aproximado del costo del tratamiento necesario</em>. Pueden estar sujetos a cambios según el procedimiento final y materiales utilizados.</p>
+    <p class="info"><strong>Nota:</strong> Los valores presentados representan un <em>aproximado del costo del tratamiento</em>.</p>
 
     <div class="patient-info">
         <p><strong>Paciente:</strong> {{ $treatment->name ?? 'N/A' }}</p>
-        <p><strong>CI:</strong> {{ $treatment->ci_patient }}</p>
-        <p><strong>Fecha del presupuesto:</strong> {{ $treatment->created_at->format('d/m/Y') }}</p>
+        <p><strong>CI:</strong> {{ $treatment->ci_patient ?? 'N/A' }}</p>
+        <p><strong>Fecha del presupuesto:</strong> {{ optional($treatment->created_at)->format('d/m/Y') ?? 'N/A' }}</p>
     </div>
 
     <table>
@@ -115,33 +107,33 @@
                 @endphp
                 <tr>
                     <td>{{ $budget->budget }}</td>
-                    <td>{{ $budget->description }}</td>
+                    <td>{{ $budget->description ?? 'N/A' }}</td>
                     <td class="right">{{ $quantity }}</td>
-                    <td class="right">{{ number_format($budget->total_amount, 2) }}</td>
-                    <td class="right">{{ number_format($lineTotal, 2) }}</td>
+                    <td class="right">{{ number_format($budget->total_amount ?? 0, 2) }}</td>
+                    <td class="right">{{ number_format($lineTotal ?? 0, 2) }}</td>
                 </tr>
             @endforeach
 
             <tr class="totals">
                 <td colspan="4" class="right">Subtotal</td>
-                <td class="right">{{ number_format($treatment->total_amount, 2) }}</td>
+                <td class="right">{{ number_format($treatment->total_amount ?? 0, 2) }}</td>
             </tr>
             <tr class="totals">
                 <td colspan="4" class="right">Descuento</td>
-                <td class="right">{{ number_format($treatment->discount, 2) }}</td>
+                <td class="right">{{ number_format($treatment->discount ?? 0, 2) }}</td>
             </tr>
             <tr class="totals">
                 <td colspan="4" class="right">Total Final</td>
-                <td class="right">{{ number_format($treatment->amount, 2) }}</td>
+                <td class="right">{{ number_format($treatment->amount ?? 0, 2) }}</td>
             </tr>
         </tbody>
     </table>
 
-    <p><strong>Detalles del tratamiento:</strong> {{ $treatment->details ?? 'Sin información adicional' }}</p>
+    <p><strong>Detalles:</strong> {{ $treatment->details ?? 'Sin información adicional' }}</p>
 
     <footer>
-        <p>Emitido por: <strong>{{ $author }}</strong></p>
         <p>Fecha de emisión: {{ now()->format('d/m/Y H:i') }}</p>
+        <p>Emitido por: <strong>{{ $author ?? 'N/A' }}</strong></p>
     </footer>
 </body>
 </html>

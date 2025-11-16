@@ -20,7 +20,7 @@
     @if($payments->isEmpty())
     <p class="text-gray-600 text-center py-4">{{ __('Aún no se han registrado pagos.') }}</p>
     @else
-    <div class="grid grid-cols-5 font-semibold border-b border-gray-300 pb-2 mb-2 text-center">
+    <div class="grid grid-cols-6 font-semibold border-b border-gray-300 pb-2 mb-2 text-center">
         <div class="title4 flex justify-center">{{ __('Fecha') }}</div>
         <div class="title4 flex justify-center">{{ __('Monto') }}</div>
         <div class="title4 flex justify-center">{{ __('Método') }}</div>
@@ -28,7 +28,7 @@
         <div class="title4 flex justify-center">{{ __('Registrador por:') }}</div>
     </div>
     @foreach($payments as $p)
-    <div class="grid grid-cols-5 border-b border-gray-200 py-2 text-center items-center">
+    <div class="grid grid-cols-6 border-b border-gray-200 py-2 text-center items-center">
         <div>{{ $p->created_at->format('d/m/Y H:i') }}</div>
         <div>Bs. {{ number_format($p->amount, 2) }}</div>
         <div>{{ $p->method ?? '-' }}</div>

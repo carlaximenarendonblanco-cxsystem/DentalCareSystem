@@ -16,7 +16,7 @@
 <h1 class="title1 text-center">{{ __('Lista de Presupuestos') }}</h1>
 <div class="max-w-6xl mx-auto bg-white rounded-xl p-3 text-gray-900">
 
-    <div class="grid grid-cols-7 gap-4 border-b border-gray-300 pb-2 mb-3 text-center font-semibold">
+    <div class="grid grid-cols-8 gap-4 border-b border-gray-300 pb-2 mb-3 text-center font-semibold">
         <div class="title4 text-center">{{ __('Paciente') }}</div>
         <div class="title4 text-center">{{ __('C.I.') }}</div>
         <div class="title4 text-center">{{ __('Total') }}</div>
@@ -26,7 +26,7 @@
     </div>
 
     @forelse($treatments as $treatment)
-    <div class="grid grid-cols-7 gap-4 items-center border-b border-gray-200 py-3 text-gray-800 hover:bg-gray-50 transition text-center">
+    <div class="grid grid-cols-8 gap-4 items-center border-b border-gray-200 py-3 text-gray-800 hover:bg-gray-50 transition text-center">
         <div><a href="{{ route('payments.show',$treatment->id) }}" class="flex justify-center hover:text-cyan-600">{{ $treatment->name ?? 'N/A' }}</a></div>
         <div><a href="{{ route('payments.show',$treatment->id) }}" class="flex justify-center hover:text-cyan-600">{{ $treatment->ci_patient ?? 'N/A' }}</a></div>
         <div><a href="{{ route('payments.show',$treatment->id) }}" class="flex justify-center hover:text-cyan-600">Bs. {{ number_format($treatment->total_amount, 2) }}</a></div>
