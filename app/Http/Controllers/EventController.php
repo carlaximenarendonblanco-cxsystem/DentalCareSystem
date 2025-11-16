@@ -15,23 +15,12 @@ class EventController extends Controller
     {
         $user = Auth::user();
 
-        $all_events = $user->role === 'superadmin'
-            ? Event::all()
-            : Event::where('clinic_id', $user->clinic_id)->get();
-
-        $events = [];
-
-        foreach ($all_events as $event) {
-            $events[] = [
-                'id' => $event->id,
-                'title' => $event->event,
-                'start' => Carbon::parse($event->start_date)->format('Y-m-d\TH:i:s'),
-                'end' => Carbon::parse($event->end_date)->format('Y-m-d\TH:i:s'),
-                'room' => $event->room,
-                'allDay' => false,
-                'doctor' => $event->assignedDoctor->name ?? 'No asignado',
-                'creator_name' => $event->creator->name ?? 'Sin información',
-            ];
+        if ($user->role === 'superadmin') {
+            $events = Event::orderBy('start_date', 'ASC')->get();
+        } else {
+            $events = Event::where('clinic_id', $user->clinic_id)
+                ->orderBy('start_date', 'ASC')
+                ->get();
         }
 
         return view('events.index', compact('events'));
@@ -40,8 +29,8 @@ class EventController extends Controller
     public function create()
     {
         $user = Auth::user();
-        $clinic = $user->clinic ?? null;
 
+        // Filtrar doctores y radiólogos por clínica (menos el superadmin)
         if ($user->role === 'superadmin') {
             $doctors = User::where('role', 'doctor')->get();
             $radiologists = User::where('role', 'radiology')->get();
@@ -58,7 +47,7 @@ class EventController extends Controller
             $patients = Patient::where('clinic_id', $user->clinic_id)->get();
         }
 
-        return view('events.create', compact('doctors', 'radiologists', 'patients', 'clinic'));
+        return view('events.create', compact('doctors', 'radiologists', 'patients'));
     }
 
     public function store(Request $request)
@@ -72,20 +61,18 @@ class EventController extends Controller
         ]);
 
         $start = Carbon::parse($request->start_date);
-        $duration = $request->duration_minutes + 10; // suma de 10 minutos extra
+        $duration = $request->duration_minutes + 10;
         $end = $start->copy()->addMinutes($duration);
-
-        $user = Auth::user();
 
         // Verificar conflicto de horario por sala
         $conflict = Event::where('room', $request->room)
-            ->where('clinic_id', $user->clinic_id)
+            ->where('clinic_id', Auth::user()->clinic_id)
             ->where(function ($query) use ($start, $end) {
                 $query->whereBetween('start_date', [$start, $end])
                     ->orWhereBetween('end_date', [$start, $end])
                     ->orWhere(function ($query) use ($start, $end) {
                         $query->where('start_date', '<=', $start)
-                              ->where('end_date', '>=', $end);
+                            ->where('end_date', '>=', $end);
                     });
             })
             ->exists();
@@ -104,17 +91,46 @@ class EventController extends Controller
             'assigned_doctor' => $request->assigned_doctor ?: $request->custom_doctor,
             'assigned_radiologist' => $request->assigned_radiologist ?: $request->custom_radiologist,
             'patient_id' => $request->patient_id,
-            'clinic_id' => $user->clinic_id,
-            'created_by' => $user->id,
+            'clinic_id' => Auth::user()->clinic_id, // ← IMPORTANTE
+            'created_by' => Auth::id(),
         ]);
 
-        return redirect()->route('events.index')->with('success', 'Cita creada correctamente.');
+        return redirect()->route('events.index')->with('success', 'Cita creada');
+    }
+
+    public function calendar()
+    {
+        $user = Auth::user();
+
+        if ($user->role === 'superadmin') {
+            $all_events = Event::all();
+        } else {
+            $all_events = Event::where('clinic_id', $user->clinic_id)->get();
+        }
+
+        $events = [];
+
+        foreach ($all_events as $event) {
+            $events[] = [
+                'id' => $event->id,
+                'title' => $event->event,
+                'start' => date('Y-m-d\TH:i:s', strtotime($event->start_date)),
+                'end' => date('Y-m-d\TH:i:s', strtotime($event->end_date)),
+                'room' => $event->room,
+                'allDay' => false,
+                'doctor' => $event->assignedDoctor->name ?? 'No asignado',
+                'creator_name' => $event->creator->name ?? 'Sin información',
+            ];
+        }
+
+        return view('events.index', compact('events'));
     }
 
     public function show($id)
     {
         $event = Event::findOrFail($id);
 
+        // Bloquear acceso si no pertenece a la clínica
         if (Auth::user()->role !== 'superadmin' && $event->clinic_id !== Auth::user()->clinic_id) {
             abort(403, 'No tienes permiso para ver esta cita.');
         }
@@ -129,7 +145,6 @@ class EventController extends Controller
         }
 
         $user = Auth::user();
-        $clinic = $user->clinic ?? null;
 
         if ($user->role === 'superadmin') {
             $doctors = User::where('role', 'doctor')->get();
@@ -147,7 +162,7 @@ class EventController extends Controller
             $patients = Patient::where('clinic_id', $user->clinic_id)->get();
         }
 
-        return view('events.edit', compact('doctors', 'radiologists', 'patients', 'event', 'clinic'));
+        return view('events.edit', compact('doctors', 'radiologists', 'patients', 'event'));
     }
 
     public function update(Request $request, Event $event)
@@ -172,7 +187,7 @@ class EventController extends Controller
             'patient_id' => $request->patient_id,
         ]);
 
-        return redirect()->route('events.index')->with('success', 'Información de la cita actualizada.');
+        return redirect()->route('events.index')->with('success', 'Información actualizada');
     }
 
     public function destroy(Event $event)
@@ -183,6 +198,6 @@ class EventController extends Controller
 
         $event->delete();
 
-        return redirect()->route('events.index')->with('danger', 'Cita eliminada.');
+        return redirect()->route('events.index')->with('danger', 'Cita eliminada');
     }
 }

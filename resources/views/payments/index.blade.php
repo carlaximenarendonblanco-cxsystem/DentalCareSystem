@@ -13,7 +13,6 @@
         <input class="botton2 px-4 py-2 rounded-full" type="submit" value="{{ __('Buscar') }}" />
     </form>
 
-
     <div class="flex gap-2 flex-wrap">
         <a href="{{ route('treatments.index') }}" class="botton4">{{ __('Tratamientos') }}</a>
         @isset($treatment)
