@@ -15,4 +15,5 @@ class PaymentPlanInstallment extends Model
     {
         return $this->belongsTo(PaymentPlan::class);
     }
+    
 }
