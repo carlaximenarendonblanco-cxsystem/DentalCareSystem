@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Clinic;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 
 class ClinicController extends Controller
 {
@@ -27,33 +26,27 @@ class ClinicController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'logo' => 'nullable|image|max:1024',
+            'name'        => 'required|string|max:255',
+            'address'     => 'nullable|string|max:255',
+            'phone'       => 'nullable|string|max:20',
+            'logo'        => 'nullable|image|max:2048',
             'rooms_count' => 'required|integer|min:1',
         ]);
 
-        $storagePath = storage_path('app/public/logos');
-        if (!File::exists($storagePath)) {
-            File::makeDirectory($storagePath, 0775, true);
-        }
-
+        // Convertir el logo a base64 si existe
         if ($request->hasFile('logo')) {
-            $logo = $request->file('logo');
-            $filename = time() . '_' . $logo->getClientOriginalName();
-            $logo->move($storagePath, $filename);
-            $validated['logo'] = 'storage/logos/' . $filename;
+            $image = file_get_contents($request->file('logo')->getRealPath());
+            $validated['logo'] = base64_encode($image);
         }
 
         Clinic::create($validated);
 
-        return redirect()->route('clinics.index')->with('success', 'Clínica creada exitosamente');
+        return redirect()->route('clinics.index')
+            ->with('success', 'Clínica creada exitosamente');
     }
 
     public function show(Clinic $clinic)
     {
-        // Retornamos la vista con la clínica específica
         return view('clinics.show', compact('clinic'));
     }
 
@@ -65,54 +58,41 @@ class ClinicController extends Controller
     public function update(Request $request, Clinic $clinic)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'logo' => 'nullable|image|max:1024',
+            'name'        => 'required|string|max:255',
+            'address'     => 'nullable|string|max:255',
+            'phone'       => 'nullable|string|max:20',
+            'logo'        => 'nullable|image|max:2048',
             'rooms_count' => 'required|integer|min:1',
         ]);
 
-        $storagePath = storage_path('app/public/logos');
-        if (!File::exists($storagePath)) {
-            File::makeDirectory($storagePath, 0775, true);
-        }
-
+        // Reemplazar logo solo si se sube uno nuevo
         if ($request->hasFile('logo')) {
-            if ($clinic->logo) {
-                $oldPath = str_replace('storage/', storage_path('app/public/'), $clinic->logo);
-                if (File::exists($oldPath)) {
-                    File::delete($oldPath);
-                }
-            }
-
-            $logo = $request->file('logo');
-            $filename = time() . '_' . $logo->getClientOriginalName();
-            $logo->move($storagePath, $filename);
-            $validated['logo'] = 'storage/logos/' . $filename;
+            $image = file_get_contents($request->file('logo')->getRealPath());
+            $validated['logo'] = base64_encode($image);
         }
 
         $clinic->update($validated);
 
-        return redirect()->route('clinics.index')->with('success', 'Clínica actualizada exitosamente');
+        return redirect()->route('clinics.index')
+            ->with('success', 'Clínica actualizada exitosamente');
     }
 
     public function destroy(Clinic $clinic)
     {
-        if ($clinic->logo) {
-            $oldPath = str_replace('storage/', storage_path('app/public/'), $clinic->logo);
-            if (File::exists($oldPath)) {
-                File::delete($oldPath);
-            }
-        }
         $clinic->delete();
-        return redirect()->route('clinics.index')->with('danger', 'Clínica eliminada');
+
+        return redirect()->route('clinics.index')
+            ->with('danger', 'Clínica eliminada');
     }
 
     public function search(Request $request)
     {
         $search = $request->input('search');
         $clinics = Clinic::where('name', 'LIKE', "%$search%")
-            ->orWhere('phone', 'LIKE', "%$search%")->paginate(10)->withQueryString();
+            ->orWhere('phone', 'LIKE', "%$search%")
+            ->paginate(10)
+            ->withQueryString();
+
         return view('clinics.search', compact('clinics'));
     }
 }

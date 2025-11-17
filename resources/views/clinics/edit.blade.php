@@ -43,10 +43,24 @@
                 @error('phone') <p class="error mt-1">{{ $message }}</p> @enderror
             </div>
 
-            {{-- Logo --}}
+            {{-- Logo actual --}}
+            <div class="flex flex-col">
+                <label class="title4 block mb-2">{{ __('Logo Actual') }}:</label>
+
+                @if($clinic->logo)
+                    <img src="data:image/png;base64,{{ $clinic->logo }}"
+                         alt="Logo actual"
+                         class="w-32 h-32 object-contain border rounded-xl shadow">
+                @else
+                    <p class="text-gray-500 text-sm">No hay logo registrado.</p>
+                @endif
+            </div>
+
+            {{-- Subir nuevo logo --}}
             <div>
-                <label class="title4 block mb-2">{{ __('Logo') }}:</label>
+                <label class="title4 block mb-2">{{ __('Nuevo Logo (Opcional)') }}:</label>
                 <input type="file" name="logo" 
+                       accept="image/*"
                     class="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:border-cyan-500 focus:ring focus:ring-cyan-300 focus:ring-opacity-50 transition duration-200 ease-in-out text-gray-700 bg-white"/>
                 @error('logo') <p class="error mt-1">{{ $message }}</p> @enderror
             </div>
@@ -61,7 +75,7 @@
 
         </div>
 
-        {{-- Botón de envío centrado --}}
+        {{-- Botón de envío --}}
         <div class="flex justify-center p-5 mt-2">
             <button type="submit" class="botton2">{{ __('Actualizar Clínica') }}</button>
         </div>

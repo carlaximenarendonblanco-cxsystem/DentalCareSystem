@@ -29,42 +29,47 @@ class EventController extends Controller
     public function create()
     {
         $user = Auth::user();
+        $clinic = $user->clinic;
 
-        // Filtrar doctores y radiólogos por clínica (menos el superadmin)
+        // Filtrar doctores y pacientes por clínica
         if ($user->role === 'superadmin') {
             $doctors = User::where('role', 'doctor')->get();
-            $radiologists = User::where('role', 'radiology')->get();
             $patients = Patient::all();
         } else {
             $doctors = User::where('role', 'doctor')
                 ->where('clinic_id', $user->clinic_id)
                 ->get();
 
-            $radiologists = User::where('role', 'radiology')
-                ->where('clinic_id', $user->clinic_id)
-                ->get();
-
             $patients = Patient::where('clinic_id', $user->clinic_id)->get();
         }
 
-        return view('events.create', compact('doctors', 'radiologists', 'patients'));
+        return view('events.create', compact('doctors', 'patients', 'clinic'));
     }
 
     public function store(Request $request)
     {
+        $clinic = Auth::user()->clinic;
+
+        // Generar lista dinámica de consultorios permitidos
+        $validRooms = [];
+        for ($i = 1; $i <= $clinic->rooms_count; $i++) {
+            $validRooms[] = "Consultorio $i";
+        }
+
+        // Validación completa
         $request->validate([
             'event' => 'required|string',
             'start_date' => 'required|date',
             'duration_minutes' => 'required|integer|min:1',
-            'room' => 'required|in:Consultorio 1,Consultorio 2',
             'patient_id' => 'required|exists:patients,id',
+            'room' => 'required|in:' . implode(',', $validRooms),
         ]);
 
         $start = Carbon::parse($request->start_date);
-        $duration = $request->duration_minutes + 10;
+        $duration = $request->duration_minutes + 10;  // + tiempo extra
         $end = $start->copy()->addMinutes($duration);
 
-        // Verificar conflicto de horario por sala
+        // Verificar conflicto de horario por consultorio
         $conflict = Event::where('room', $request->room)
             ->where('clinic_id', Auth::user()->clinic_id)
             ->where(function ($query) use ($start, $end) {
@@ -78,7 +83,7 @@ class EventController extends Controller
             ->exists();
 
         if ($conflict) {
-            return back()->withErrors(['room' => 'La sala ya está ocupada en ese horario.'])->withInput();
+            return back()->withErrors(['room' => 'El consultorio ya está ocupado en ese horario.'])->withInput();
         }
 
         Event::create([
@@ -88,14 +93,14 @@ class EventController extends Controller
             'end_date' => $end,
             'duration_minutes' => $request->duration_minutes,
             'room' => $request->room,
-            'assigned_doctor' => $request->assigned_doctor ?: $request->custom_doctor,
-            'assigned_radiologist' => $request->assigned_radiologist ?: $request->custom_radiologist,
+            'assigned_doctor' => $request->assigned_doctor,
+            'assigned_radiologist' => $request->assigned_radiologist,
             'patient_id' => $request->patient_id,
-            'clinic_id' => Auth::user()->clinic_id, // ← IMPORTANTE
+            'clinic_id' => Auth::user()->clinic_id,
             'created_by' => Auth::id(),
         ]);
 
-        return redirect()->route('events.index')->with('success', 'Cita creada');
+        return redirect()->route('events.index')->with('success', 'Cita creada correctamente.');
     }
 
     public function calendar()
@@ -130,7 +135,6 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
 
-        // Bloquear acceso si no pertenece a la clínica
         if (Auth::user()->role !== 'superadmin' && $event->clinic_id !== Auth::user()->clinic_id) {
             abort(403, 'No tienes permiso para ver esta cita.');
         }
@@ -171,6 +175,23 @@ class EventController extends Controller
             abort(403, 'No tienes permiso para modificar esta cita.');
         }
 
+        $clinic = Auth::user()->clinic;
+
+        // Consultorios dinámicos
+        $validRooms = [];
+        for ($i = 1; $i <= $clinic->rooms_count; $i++) {
+            $validRooms[] = "Consultorio $i";
+        }
+
+        // Validación
+        $request->validate([
+            'event' => 'required|string',
+            'start_date' => 'required|date',
+            'duration_minutes' => 'required|integer|min:1',
+            'patient_id' => 'required|exists:patients,id',
+            'room' => 'required|in:' . implode(',', $validRooms),
+        ]);
+
         $start = Carbon::parse($request->start_date);
         $duration = $request->duration_minutes + 10;
         $end = $start->copy()->addMinutes($duration);
@@ -182,12 +203,13 @@ class EventController extends Controller
             'end_date' => $end,
             'duration_minutes' => $request->duration_minutes,
             'room' => $request->room,
-            'assigned_doctor' => $request->assigned_doctor ?: $request->custom_doctor,
-            'assigned_radiologist' => $request->assigned_radiologist ?: $request->custom_radiologist,
+            'assigned_doctor' => $request->assigned_doctor,
+            'assigned_radiologist' => $request->assigned_radiologist,
             'patient_id' => $request->patient_id,
+            'edit_by' => Auth::id(),
         ]);
 
-        return redirect()->route('events.index')->with('success', 'Información actualizada');
+        return redirect()->route('events.index')->with('success', 'Cita actualizada correctamente.');
     }
 
     public function destroy(Event $event)
@@ -198,6 +220,7 @@ class EventController extends Controller
 
         $event->delete();
 
-        return redirect()->route('events.index')->with('danger', 'Cita eliminada');
+        return redirect()->route('events.index')->with('danger', 'Cita eliminada.');
     }
 }
+
