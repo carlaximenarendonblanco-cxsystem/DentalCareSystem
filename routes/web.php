@@ -54,7 +54,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::delete('/admin/users/{user}', [AdminUserController::class, 'destroy'])->name('admin.destroy');
     Route::get('/admin/users/search', [AdminUserController::class, 'search'])->name('admin.search');
     Route::get('users/{user}', [AdminUserController::class, 'show'])->name('admin.show');
-    
+
     Route::get('/tool', [ToolController::class, 'index'])->name('tool.index');
     Route::post('/tool/new/tool/{tomography_id}/{ci_patient}/{id}', [ToolController::class, 'new'])->name('tool.new');
     Route::post('/tool/store/tool/{radiography_id}/{tomography_id}/{ci_patient}/{id}', [ToolController::class, 'storeTool'])->name('tool.store');
@@ -102,4 +102,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/multimedia/tool/{id}', [MultimediaFileController::class, 'tool'])->name('multimedia.tool');
     Route::resource('clinics', ClinicController::class);
     Route::post('/clinics-search', [ClinicController::class, 'search'])->name('clinics.search');
+
+    Route::prefix('treatments')->group(function () {
+        Route::get('{treatment}/payment-plan/create', [PaymentPlanController::class, 'create'])->name('payment_plans.create');
+        Route::get('{treatment}/payment-plan', [PaymentPlanController::class, 'show'])->name('payment_plans.show');
+    });
 });

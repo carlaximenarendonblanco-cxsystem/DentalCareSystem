@@ -44,4 +44,8 @@ class Treatment extends Model
     {
         return $this->belongsTo(User::class, 'edit_by');
     }
+    public function paymentPlan()
+    {
+        return $this->hasOne(PaymentPlan::class);
+    }
 }

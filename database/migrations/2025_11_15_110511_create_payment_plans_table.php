@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('payment_plans', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('budget_id');
+            $table->foreignId('treatment_id')->constrained()->cascadeOnDelete(); // Relación con el tratamiento
             $table->string('name')->nullable();
             $table->integer('installments')->default(1);
             $table->decimal('amount_per_installment', 10, 2)->nullable();
@@ -23,7 +23,6 @@ return new class extends Migration
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('edit_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-            $table->foreign('budget_id')->references('id')->on('budgets')->cascadeOnDelete();
         });
     }
 
