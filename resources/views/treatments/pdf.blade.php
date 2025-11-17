@@ -80,8 +80,8 @@
 
 <body>
     <header>
-        @if(!empty($clinic->logo) && file_exists(storage_path('app/'.$clinic->logo)))
-        <img src="{{ storage_path('app/' . $clinic->logo) }}" alt="Logo Clínica">
+        @if(!empty($clinic->logo))
+            <img src="data:image/png;base64,{{ $clinic->logo }}" alt="Logo Clínica">
         @endif
         <div class="clinic-info">
             <p><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
@@ -110,21 +110,21 @@
         </thead>
         <tbody>
             @php
-            $budgetCodes = json_decode($treatment->budget_codes, true) ?? [];
+                $budgetCodes = json_decode($treatment->budget_codes, true) ?? [];
             @endphp
 
             @foreach ($budgets as $budget)
-            @php
-            $quantity = $budgetCodes[$budget->id] ?? 1;
-            $lineTotal = $budget->total_amount * $quantity;
-            @endphp
-            <tr>
-                <td>{{ $budget->budget }}</td>
-                <td>{{ $budget->description ?? 'N/A' }}</td>
-                <td class="right">{{ $quantity }}</td>
-                <td class="right">{{ number_format($budget->total_amount ?? 0, 2) }}</td>
-                <td class="right">{{ number_format($lineTotal ?? 0, 2) }}</td>
-            </tr>
+                @php
+                    $quantity = $budgetCodes[$budget->id] ?? 1;
+                    $lineTotal = $budget->total_amount * $quantity;
+                @endphp
+                <tr>
+                    <td>{{ $budget->budget }}</td>
+                    <td>{{ $budget->description ?? 'N/A' }}</td>
+                    <td class="right">{{ $quantity }}</td>
+                    <td class="right">{{ number_format($budget->total_amount ?? 0, 2) }}</td>
+                    <td class="right">{{ number_format($lineTotal ?? 0, 2) }}</td>
+                </tr>
             @endforeach
 
             <tr class="totals">

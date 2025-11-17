@@ -13,7 +13,7 @@
 
 <div class="max-w-5xl mx-auto bg-white rounded-xl p-4 text-gray-900">
     <!-- Resumen del tratamiento -->
-    <div class="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center sm:text-left">
+    <div class="mb-4 gap-4 text-center sm:text-left">
         <p class="txt"><strong>{{ __('Total') }}:</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
         <p class="txt"><strong>{{ __('Pagado') }}:</strong> Bs. {{ number_format($paid, 2) }}</p>
         <p class="txt"><strong>{{ __('Restante') }}:</strong> Bs. {{ number_format($remaining, 2) }}</p>
