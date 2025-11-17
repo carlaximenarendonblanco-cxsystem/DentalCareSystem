@@ -21,11 +21,19 @@
         header img {
             max-height: 60px;
             margin-right: 15px;
+            object-fit: contain;
+        }
+
+        header .clinic-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         header .clinic-info p {
             margin: 2px 0;
             font-size: 12px;
+            line-height: 1.2;
         }
 
         h1 {
@@ -81,7 +89,7 @@
 <body>
     <header>
         @if(!empty($clinic->logo))
-            <img src="data:image/png;base64,{{ $clinic->logo }}" alt="Logo Clínica">
+        <img src="data:image/png;base64,{{ $clinic->logo }}" alt="Logo Clínica">
         @endif
         <div class="clinic-info">
             <p><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
@@ -110,21 +118,21 @@
         </thead>
         <tbody>
             @php
-                $budgetCodes = json_decode($treatment->budget_codes, true) ?? [];
+            $budgetCodes = json_decode($treatment->budget_codes, true) ?? [];
             @endphp
 
             @foreach ($budgets as $budget)
-                @php
-                    $quantity = $budgetCodes[$budget->id] ?? 1;
-                    $lineTotal = $budget->total_amount * $quantity;
-                @endphp
-                <tr>
-                    <td>{{ $budget->budget }}</td>
-                    <td>{{ $budget->description ?? 'N/A' }}</td>
-                    <td class="right">{{ $quantity }}</td>
-                    <td class="right">{{ number_format($budget->total_amount ?? 0, 2) }}</td>
-                    <td class="right">{{ number_format($lineTotal ?? 0, 2) }}</td>
-                </tr>
+            @php
+            $quantity = $budgetCodes[$budget->id] ?? 1;
+            $lineTotal = $budget->total_amount * $quantity;
+            @endphp
+            <tr>
+                <td>{{ $budget->budget }}</td>
+                <td>{{ $budget->description ?? 'N/A' }}</td>
+                <td class="right">{{ $quantity }}</td>
+                <td class="right">{{ number_format($budget->total_amount ?? 0, 2) }}</td>
+                <td class="right">{{ number_format($lineTotal ?? 0, 2) }}</td>
+            </tr>
             @endforeach
 
             <tr class="totals">
@@ -150,4 +158,5 @@
         <p>Emitido por: <strong>{{ $author ?? 'N/A' }}</strong></p>
     </footer>
 </body>
+
 </html>

@@ -57,20 +57,20 @@
             }
 
             .fc-event.Sala-3 {
-                background-color: #ff9f43;
-                border-color: #ff6f00;
+                background-color: #FF47F2;
+                border-color: #e215d5ff;
                 color: white;
             }
 
             .fc-event.Sala-4 {
-                background-color: #ff6b6b;
-                border-color: #c70000;
+                background-color: #477EFF;
+                border-color: #0947d6ff;
                 color: white;
             }
 
             .fc-event.Sala-5 {
-                background-color: #6bc0ff;
-                border-color: #0066c7;
+                background-color: #27F568;
+                border-color: #02bb3cff;
                 color: white;
             }
 
