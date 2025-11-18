@@ -88,7 +88,7 @@
 
 <body>
     <header style="margin-bottom: 20px; width: 100%;">
-        <table style="width: 100%; border-collapse: collapse;">
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid white;">
             <tr>
                 <!-- Columna del logo -->
                 <td style="width: 150px; vertical-align: middle;">

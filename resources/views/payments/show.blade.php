@@ -9,6 +9,11 @@
     @if($remaining > 0)
     <a href="{{ route('payments.create', $treatment->id) }}" class="botton1">{{ __('Registrar Pago') }}</a>
     @endif
+    @if($treatment->paymentPlan)
+    <a href="{{ route('payment_plans.show', $treatment->id) }}" class="botton3">{{ __('Ver Plan de Pagos') }}</a>
+    @else
+    <a href="{{ route('payment_plans.create', $treatment->id) }}" class="botton3">{{ __('Generar Plan de Pagos') }}</a>
+    @endif
 </div>
 
 <div class="max-w-5xl mx-auto bg-white rounded-xl p-4 text-gray-900">
@@ -17,22 +22,6 @@
         <p class="txt"><strong>{{ __('Total') }}:</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
         <p class="txt"><strong>{{ __('Pagado') }}:</strong> Bs. {{ number_format($paid, 2) }}</p>
         <p class="txt"><strong>{{ __('Restante') }}:</strong> Bs. {{ number_format($remaining, 2) }}</p>
-    </div>
-
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 pb-1 gap-3">
-        <h1 class="title1">{{ $treatment->name ?? 'Unnamed treatment' }} - {{ $treatment->ci_patient }}</h1>
-
-        <div class="flex gap-3">
-            @if($remaining > 0)
-            <a href="{{ route('payments.create', $treatment->id) }}" class="botton1">{{ __('Registrar Pago') }}</a>
-            @endif
-
-            @if($treatment->paymentPlan)
-            <a href="{{ route('payment_plans.show', $treatment->id) }}" class="botton2">{{ __('Ver Plan de Pagos') }}</a>
-            @else
-            <a href="{{ route('payment_plans.create', $treatment->id) }}" class="botton1">{{ __('Generar Plan de Pagos') }}</a>
-            @endif
-        </div>
     </div>
 
     <h2 class="title2 text-center py-5">{{ __('Historial de Pagos') }}</h2>
