@@ -90,7 +90,7 @@
     <header style="margin-bottom: 20px;">
 
         <!-- Contenedor general -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
 
             <!-- Logo a la izquierda -->
             @if(!empty($clinic->logo))
@@ -101,7 +101,7 @@
             </div>
             @endif
 
-            <!-- Información alineada abajo a la derecha -->
+            <!-- Información alineada a la derecha -->
             <div class="clinic-info" style="text-align: right; line-height: 1.2;">
                 <p style="margin: 0;"><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
                 <p style="margin: 0;">{{ $clinic->address ?? 'Dirección no registrada' }}</p>
@@ -111,6 +111,7 @@
         </div>
 
     </header>
+
 
     <h1>PRESUPUESTO TRATAMIENTO DENTAL</h1>
 

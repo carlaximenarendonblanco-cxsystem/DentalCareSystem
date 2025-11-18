@@ -18,7 +18,7 @@
         <p><strong>{{ __('C.I.:') }}</strong> {{ $treatment->ci_patient ?? 'N/A' }}</p>
         <p><strong>{{ __('Tratamiento:') }}</strong> {{ $treatment->name ?? 'N/A' }}</p>
         <p><strong>{{ __('Monto total:') }}</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
-        <p><strong>{{ __('Número de cuotas:') }}</strong> {{ $plan->installments ?? 0 }}</p>
+        <p><strong>{{ __('Número de cuotas:') }}</strong> {{ $plan->installments_count ?? 0 }}</p>
         @if($plan->amount_per_installment)
             <p><strong>{{ __('Monto por cuota:') }}</strong> Bs. {{ number_format($plan->amount_per_installment, 2) }}</p>
         @endif
