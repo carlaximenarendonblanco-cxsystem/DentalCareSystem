@@ -27,14 +27,23 @@
 
         <div class="flex flex-col sm:flex-row gap-4">
 
+            <!-- Número de cuotas -->
             <div class="flex-1">
                 <label class="title4">{{ __('Número de cuotas') }}</label>
-                <input type="number" name="installments" value="1" min="1" class="input1" required>
+                <input type="number" name="installments" id="installments" value="1" min="1" class="input1" required>
             </div>
 
+            <!-- Monto por cuota sugerido -->
+            <div class="flex-1">
+                <label class="title4">{{ __('Monto por cuota (sugerido)') }}</label>
+                <input type="number" name="amount_per_installment" id="amount_per_installment" 
+                       value="{{ number_format($treatment->amount, 2, '.', '') }}" step="0.01" min="0" class="input1" required>
+            </div>
+
+            <!-- Fecha de inicio -->
             <div class="flex-1">
                 <label class="title4">{{ __('Fecha de inicio') }}</label>
-                <input type="date" name="start_date" value="{{ date('Y-m-d') }}" class="input1" required>
+                <input type="date" name="start_date" id="start_date" value="{{ date('Y-m-d') }}" class="input1" required>
             </div>
         </div>
 
@@ -44,4 +53,17 @@
         </div>
     </form>
 </div>
+
+<script>
+    // Actualizar monto sugerido automáticamente cuando cambie el número de cuotas
+    const installmentsInput = document.getElementById('installments');
+    const amountInput = document.getElementById('amount_per_installment');
+    const totalAmount = {{ $treatment->amount }};
+
+    installmentsInput.addEventListener('input', function() {
+        const cuotas = parseInt(this.value) || 1;
+        const suggested = (totalAmount / cuotas).toFixed(2);
+        amountInput.value = suggested;
+    });
+</script>
 @endsection

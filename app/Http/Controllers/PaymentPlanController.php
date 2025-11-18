@@ -16,7 +16,6 @@ class PaymentPlanController extends Controller
      */
     public function create(Treatment $treatment)
     {
-        // Si ya tiene plan, redirigimos a la vista del plan existente
         if ($treatment->paymentPlan) {
             return redirect()->route('payment_plans.show', $treatment->id)
                 ->with('info', 'Este tratamiento ya tiene un plan de pagos.');
@@ -31,6 +30,15 @@ class PaymentPlanController extends Controller
     public function show(Treatment $treatment)
     {
         $plan = $treatment->paymentPlan()->with('installments')->first();
+
+        // Asegurarse que $plan->installments siempre sea colección
+        if ($plan) {
+            $plan->installments = $plan->installments ?? collect();
+        } else {
+            $plan = new PaymentPlan(); // evitar errores en la vista
+            $plan->installments = collect();
+        }
+
         return view('payment_plans.show', compact('treatment', 'plan'));
     }
 
@@ -43,31 +51,32 @@ class PaymentPlanController extends Controller
             'name' => 'nullable|string|max:255',
             'installments' => 'required|integer|min:1',
             'start_date' => 'required|date',
+            'amount_per_installment' => 'nullable|numeric|min:0',
         ]);
 
         if ($treatment->paymentPlan) {
             return redirect()->back()->with('error', 'El tratamiento ya tiene un plan de pagos.');
         }
 
-        // Calcular monto sugerido por cuota
-        $amount_per_installment = round($treatment->amount / $request->installments, 2);
+        $installments = $request->installments;
+        $amountPerInstallment = $request->amount_per_installment ?? round($treatment->amount / $installments, 2);
 
         // Crear plan
         $plan = PaymentPlan::create([
             'treatment_id' => $treatment->id,
             'name' => $request->name,
-            'installments' => $request->installments,
-            'amount_per_installment' => $amount_per_installment,
+            'installments' => $installments,
+            'amount_per_installment' => $amountPerInstallment,
             'start_date' => $request->start_date,
             'created_by' => Auth::id(),
         ]);
 
         // Generar cuotas
-        for ($i = 1; $i <= $request->installments; $i++) {
+        for ($i = 1; $i <= $installments; $i++) {
             PaymentPlanInstallment::create([
                 'payment_plan_id' => $plan->id,
                 'number' => $i,
-                'amount' => $amount_per_installment,
+                'amount' => $amountPerInstallment,
                 'due_date' => Carbon::parse($request->start_date)->addMonths($i - 1)->toDateString(),
             ]);
         }
@@ -85,7 +94,7 @@ class PaymentPlanController extends Controller
     }
 
     /**
-     * Actualizar cuota
+     * Actualizar cuota individual
      */
     public function updateInstallment(Request $request, PaymentPlanInstallment $installment)
     {
@@ -104,10 +113,13 @@ class PaymentPlanController extends Controller
     }
 
     /**
-     * Eliminar plan de pagos completo
+     * Eliminar plan de pagos completo junto a sus cuotas
      */
     public function destroy(PaymentPlan $plan)
     {
+        // Eliminar cuotas asociadas
+        $plan->installments()->delete();
+
         $plan->delete();
         return redirect()->back()->with('success', 'Plan de pagos eliminado.');
     }
