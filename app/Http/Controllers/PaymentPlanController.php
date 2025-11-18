@@ -35,10 +35,11 @@ class PaymentPlanController extends Controller
 
         if (!$plan) {
             $plan = new PaymentPlan();
+            $plan->installments = collect();
+        } else {
+            // Aseguramos que installments siempre sea una colección
+            $plan->installments = $plan->installments ?? collect();
         }
-
-        // Siempre devolver una colección
-        $plan->installments = $plan->installments ?? collect();
 
         return view('payment_plans.show', compact('treatment', 'plan'));
     }

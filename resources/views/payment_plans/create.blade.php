@@ -11,8 +11,8 @@
     <h1 class="title1 text-center pb-5">{{ __('Generar Plan de Pagos') }}</h1>
 
     <div class="mb-6">
-        <p><strong>{{ __('Paciente:') }}</strong> {{ $treatment->patient->name_patient ?? 'N/A' }}</p>
-        <p><strong>{{ __('Tratamiento:') }}</strong> {{ $treatment->name ?? 'N/A' }}</p>
+        <p><strong>{{ __('Paciente:') }}</strong> {{ $treatment->name ?? 'N/A' }}</p>
+        <p><strong>{{ __('C.I.:') }}</strong> {{ $treatment->ci_patient ?? 'N/A' }}</p>
         <p><strong>{{ __('Monto total:') }}</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
     </div>
 
@@ -34,7 +34,7 @@
             </select>
         </div>
 
-        <!-- Campo: nombre del plan -->
+        <!-- Nombre del plan -->
         <div>
             <label class="title4">{{ __('Nombre del Plan (Opcional)') }}</label>
             <input type="text" name="name" class="input1" placeholder="Ej: Plan básico">
@@ -43,18 +43,15 @@
         <!-- AUTOMÁTICO -->
         <div id="auto-section">
             <div class="flex flex-col sm:flex-row gap-4">
-
                 <div class="flex-1">
                     <label class="title4">{{ __('Número de cuotas') }}</label>
                     <input type="number" name="auto_installments" id="auto_installments" value="1" min="1" class="input1">
                 </div>
-
                 <div class="flex-1">
                     <label class="title4">{{ __('Monto por cuota (automático)') }}</label>
                     <input type="text" id="auto_amount" disabled 
                            value="{{ number_format($treatment->amount, 2, '.', '') }}" class="input1">
                 </div>
-
                 <div class="flex-1">
                     <label class="title4">{{ __('Fecha de inicio') }}</label>
                     <input type="date" name="start_date" value="{{ date('Y-m-d') }}" class="input1">
@@ -65,9 +62,7 @@
         <!-- PERSONALIZADO -->
         <div id="custom-section" class="hidden">
             <p class="text-gray-700">{{ __('Agrega las cuotas manualmente:') }}</p>
-
             <div id="customList" class="flex flex-col gap-4"></div>
-
             <button type="button" id="addInstallment" class="botton2 w-40 mt-2">
                 {{ __('Agregar Cuota') }}
             </button>

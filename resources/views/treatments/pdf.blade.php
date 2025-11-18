@@ -87,21 +87,28 @@
 </head>
 
 <body>
-    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <header style="margin-bottom: 20px;">
 
-        <div class="clinic-info" style="text-align: left; line-height: 1.2;">
-            <p style="margin: 0;"><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
-            <p style="margin: 0;">{{ $clinic->address ?? 'Dirección no registrada' }}</p>
-            <p style="margin: 0;">Teléfono: {{ $clinic->phone ?? 'N/A' }}</p>
-        </div>
+        <!-- Contenedor general -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
 
-        @if(!empty($clinic->logo))
-        <div class="clinic-logo" style="width: 120px; display: flex; justify-content: flex-end;">
-            <img src="data:image/png;base64,{{ $clinic->logo }}"
-                alt="Logo Clínica"
-                style="max-height: 60px; max-width: 120px; object-fit: contain;">
+            <!-- Logo a la izquierda -->
+            @if(!empty($clinic->logo))
+            <div class="clinic-logo" style="width: 150px;">
+                <img src="data:image/png;base64,{{ $clinic->logo }}"
+                    alt="Logo Clínica"
+                    style="max-height: 80px; max-width: 150px; object-fit: contain;">
+            </div>
+            @endif
+
+            <!-- Información alineada abajo a la derecha -->
+            <div class="clinic-info" style="text-align: right; line-height: 1.2;">
+                <p style="margin: 0;"><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
+                <p style="margin: 0;">{{ $clinic->address ?? 'Dirección no registrada' }}</p>
+                <p style="margin: 0;">Teléfono: {{ $clinic->phone ?? 'N/A' }}</p>
+            </div>
+
         </div>
-        @endif
 
     </header>
 
