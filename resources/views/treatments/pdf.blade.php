@@ -21,11 +21,19 @@
         header img {
             max-height: 60px;
             margin-right: 15px;
+            object-fit: contain;
+        }
+
+        header .clinic-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         header .clinic-info p {
             margin: 2px 0;
             font-size: 12px;
+            line-height: 1.2;
         }
 
         h1 {
@@ -79,18 +87,25 @@
 </head>
 
 <body>
-    <header> @if(!empty($clinic->logo)) <img src="data:image/png;base64,{{ $clinic->logo }}" alt="Logo Clínica"> @endif <div class="clinic-info">
+    <header>
+        @if(!empty($clinic->logo))
+        <img src="data:image/png;base64,{{ $clinic->logo }}" alt="Logo Clínica">
+        @endif
+        <div class="clinic-info">
             <p><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
             <p>{{ $clinic->address ?? 'Dirección no registrada' }}</p>
             <p>Teléfono: {{ $clinic->phone ?? 'N/A' }}</p>
         </div>
     </header>
+
     <h1>PRESUPUESTO</h1>
     <h1>TRATAMIENTO DENTAL</h1>
+
     <div class="patient-info">
         <h3><strong>Paciente:</strong> {{ $treatment->name ?? 'N/A' }}</h3>
         <h3><strong>CI:</strong> {{ $treatment->ci_patient ?? 'N/A' }}</h3>
     </div>
+
     <table>
         <thead>
             <tr>
@@ -101,13 +116,26 @@
                 <th class="right">Total</th>
             </tr>
         </thead>
-        <tbody> @php $budgetCodes = json_decode($treatment->budget_codes, true) ?? []; @endphp @foreach ($budgets as $budget) @php $quantity = $budgetCodes[$budget->id] ?? 1; $lineTotal = $budget->total_amount * $quantity; @endphp <tr>
+        <tbody>
+            @php
+            $budgetCodes = json_decode($treatment->budget_codes, true) ?? [];
+            @endphp
+
+            @foreach ($budgets as $budget)
+            @php
+            $quantity = $budgetCodes[$budget->id] ?? 1;
+            $lineTotal = $budget->total_amount * $quantity;
+            @endphp
+            <tr>
                 <td>{{ $budget->budget }}</td>
                 <td>{{ $budget->description ?? 'N/A' }}</td>
                 <td class="right">{{ $quantity }}</td>
                 <td class="right">{{ number_format($budget->total_amount ?? 0, 2) }}</td>
                 <td class="right">{{ number_format($lineTotal ?? 0, 2) }}</td>
-            </tr> @endforeach <tr class="totals">
+            </tr>
+            @endforeach
+
+            <tr class="totals">
                 <td colspan="4" class="right">Subtotal</td>
                 <td class="right">{{ number_format($treatment->total_amount ?? 0, 2) }}</td>
             </tr>
@@ -121,8 +149,10 @@
             </tr>
         </tbody>
     </table>
+
     <p><strong>Detalles:</strong> {{ $treatment->details ?? 'Sin información adicional' }}</p>
     <p class="info"><strong>Nota:</strong> Los valores presentados representan un <em>aproximado del costo del tratamiento</em>.</p>
+
     <footer>
         <p>Fecha de emisión: {{ now()->format('d/m/Y H:i') }}</p>
         <p>Emitido por: <strong>{{ $author ?? 'N/A' }}</strong></p>
