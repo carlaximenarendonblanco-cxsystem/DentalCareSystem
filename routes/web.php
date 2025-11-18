@@ -12,6 +12,7 @@ use App\Http\Controllers\TreatmentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\MultimediaFileController;
 use App\Http\Controllers\ClinicController;
+use App\Http\Controllers\PaymentPlanController;
 use App\Models\Patient;
 
 Route::get('/', function () {
