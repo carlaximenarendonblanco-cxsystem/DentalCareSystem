@@ -101,27 +101,34 @@
         autoAmount.value = (totalAmount / n).toFixed(2);
     });
 
-    // PERSONALIZADO – agregar/duplicar cuotas
+    // PERSONALIZADO – agregar y eliminar cuotas
     document.getElementById('addInstallment').addEventListener('click', () => {
         const list = document.getElementById('customList');
         const index = list.children.length;
 
-        const item = `
-            <div class="flex flex-col sm:flex-row gap-4 p-3 border rounded">
-                <div class="flex-1">
-                    <label class="title4">{{ __('Monto') }}</label>
-                    <input type="number" step="0.01" min="0.1" 
-                        name="installments[${index}][amount]" class="input1" required>
-                </div>
-                <div class="flex-1">
-                    <label class="title4">{{ __('Fecha de vencimiento') }}</label>
-                    <input type="date" 
-                        name="installments[${index}][due_date]" class="input1" required>
-                </div>
+        const item = document.createElement('div');
+        item.className = 'flex flex-col sm:flex-row gap-4 p-3 border rounded items-end';
+        item.innerHTML = `
+            <div class="flex-1">
+                <label class="title4">{{ __('Monto') }}</label>
+                <input type="number" step="0.01" min="0.1" 
+                    name="installments[${index}][amount]" class="input1" required>
+            </div>
+            <div class="flex-1">
+                <label class="title4">{{ __('Fecha de vencimiento') }}</label>
+                <input type="date" 
+                    name="installments[${index}][due_date]" class="input1" required>
+            </div>
+            <div class="flex items-center mt-2 sm:mt-0">
+                <button type="button" class="botton2 removeInstallment">{{ __('Eliminar') }}</button>
             </div>
         `;
+        list.appendChild(item);
 
-        list.insertAdjacentHTML('beforeend', item);
+        // Agregar evento para eliminar
+        item.querySelector('.removeInstallment').addEventListener('click', () => {
+            item.remove();
+        });
     });
 </script>
 @endsection

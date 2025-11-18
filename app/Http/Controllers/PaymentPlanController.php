@@ -29,21 +29,23 @@ class PaymentPlanController extends Controller
      */
     public function show(Treatment $treatment)
     {
+        // Obtener plan con sus cuotas
         $plan = $treatment->paymentPlan()->with('installments')->first();
 
         if (!$plan) {
+            // Plan vacío
             $plan = new PaymentPlan();
-            $plan->installments = collect(); // colección vacía
-            $plan->installments_count = 0;  // número de cuotas
+            $plan->installments = collect();        // colección vacía para isEmpty()
+            $plan->installments_count = 0;          // número de cuotas
             $plan->amount_per_installment = 0;
         } else {
-            // aseguramos que installments sea colección
+            // asegurar que installments sea colección
             $plan->installments = $plan->installments ?? collect();
 
-            // para mostrar en la vista el número de cuotas
+            // número total de cuotas
             $plan->installments_count = $plan->installments->count();
 
-            // si no tiene amount_per_installment, lo calculamos
+            // calcular monto por cuota si no está definido
             if (!$plan->amount_per_installment && $plan->installments_count > 0) {
                 $plan->amount_per_installment = round($plan->installments->sum('amount') / $plan->installments_count, 2);
             }
@@ -51,7 +53,6 @@ class PaymentPlanController extends Controller
 
         return view('payment_plans.show', compact('treatment', 'plan'));
     }
-
 
     /**
      * Guardar plan de pagos

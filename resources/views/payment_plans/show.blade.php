@@ -17,9 +17,9 @@
         <p><strong>{{ __('Paciente:') }}</strong> {{ $treatment->name ?? 'N/A' }}</p>
         <p><strong>{{ __('C.I.:') }}</strong> {{ $treatment->ci_patient ?? 'N/A' }}</p>
         <p><strong>{{ __('Tratamiento:') }}</strong> {{ $treatment->name ?? 'N/A' }}</p>
-        <p><strong>{{ __('Monto total:') }}</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
+        <p><strong>{{ __('Monto total:') }}</strong> Bs. {{ number_format($treatment->amount ?? 0, 2) }}</p>
         <p><strong>{{ __('Número de cuotas:') }}</strong> {{ $plan->installments_count ?? 0 }}</p>
-        @if($plan->amount_per_installment)
+        @if(!empty($plan->amount_per_installment))
             <p><strong>{{ __('Monto por cuota:') }}</strong> Bs. {{ number_format($plan->amount_per_installment, 2) }}</p>
         @endif
     </div>
@@ -43,12 +43,14 @@
 
                 <div>{{ $i + 1 }}</div>
 
-                <div>Bs. {{ number_format($cuota->amount, 2) }}</div>
-
-                <div>{{ \Carbon\Carbon::parse($cuota->due_date)->format('d/m/Y') }}</div>
+                <div>Bs. {{ number_format($cuota->amount ?? 0, 2) }}</div>
 
                 <div>
-                    @if($cuota->paid)
+                    {{ $cuota->due_date ? \Carbon\Carbon::parse($cuota->due_date)->format('d/m/Y') : 'N/A' }}
+                </div>
+
+                <div>
+                    @if(!empty($cuota->paid) && $cuota->paid)
                         <span class="text-green-700 font-semibold">{{ __('Pagado') }}</span>
                     @else
                         <span class="text-red-700 font-semibold">{{ __('Pendiente') }}</span>
@@ -58,7 +60,7 @@
                 <div>Bs. {{ number_format($cuota->paid_amount ?? 0, 2) }}</div>
 
                 <div class="flex justify-center">
-                    @if(!$cuota->paid)
+                    @if(empty($cuota->paid) || !$cuota->paid)
                         <a href="{{ route('payments.create', $treatment->id) }}" class="botton1 text-sm px-2">
                             {{ __('Registrar Pago') }}
                         </a>

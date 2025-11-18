@@ -88,29 +88,27 @@
 
 <body>
     <header style="margin-bottom: 20px;">
-
-        <!-- Contenedor general -->
         <div style="display: flex; justify-content: space-between; align-items: center;">
 
             <!-- Logo a la izquierda -->
             @if(!empty($clinic->logo))
-            <div class="clinic-logo" style="width: 150px;">
+            <div class="clinic-logo" style="width: 150px; display: flex; align-items: center;">
                 <img src="data:image/png;base64,{{ $clinic->logo }}"
                     alt="Logo Clínica"
                     style="max-height: 80px; max-width: 150px; object-fit: contain;">
             </div>
             @endif
 
-            <!-- Información alineada a la derecha -->
-            <div class="clinic-info" style="text-align: right; line-height: 1.2;">
+            <!-- Información alineada a la derecha y centrada verticalmente -->
+            <div class="clinic-info" style="text-align: right; line-height: 1.2; display: flex; flex-direction: column; justify-content: center;">
                 <p style="margin: 0;"><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
                 <p style="margin: 0;">{{ $clinic->address ?? 'Dirección no registrada' }}</p>
                 <p style="margin: 0;">Teléfono: {{ $clinic->phone ?? 'N/A' }}</p>
             </div>
 
         </div>
-
     </header>
+
 
 
     <h1>PRESUPUESTO TRATAMIENTO DENTAL</h1>
