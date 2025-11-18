@@ -7,17 +7,36 @@ use App\Models\PaymentPlan;
 use App\Models\PaymentPlanInstallment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class PaymentPlanController extends Controller
 {
-    // Mostrar vista para crear o ver plan de pagos de un tratamiento
+    /**
+     * Mostrar formulario para crear un plan de pagos
+     */
+    public function create(Treatment $treatment)
+    {
+        // Si ya tiene plan, redirigimos a la vista del plan existente
+        if ($treatment->paymentPlan) {
+            return redirect()->route('payment_plans.show', $treatment->id)
+                ->with('info', 'Este tratamiento ya tiene un plan de pagos.');
+        }
+
+        return view('payment_plans.create', compact('treatment'));
+    }
+
+    /**
+     * Mostrar el plan de pagos y sus cuotas
+     */
     public function show(Treatment $treatment)
     {
         $plan = $treatment->paymentPlan()->with('installments')->first();
         return view('payment_plans.show', compact('treatment', 'plan'));
     }
 
-    // Guardar un nuevo plan de pagos
+    /**
+     * Guardar un nuevo plan de pagos
+     */
     public function store(Request $request, Treatment $treatment)
     {
         $request->validate([
@@ -26,7 +45,6 @@ class PaymentPlanController extends Controller
             'start_date' => 'required|date',
         ]);
 
-        // Si ya tiene plan, opcionalmente devolver error o actualizar
         if ($treatment->paymentPlan) {
             return redirect()->back()->with('error', 'El tratamiento ya tiene un plan de pagos.');
         }
@@ -50,21 +68,25 @@ class PaymentPlanController extends Controller
                 'payment_plan_id' => $plan->id,
                 'number' => $i,
                 'amount' => $amount_per_installment,
-                'due_date' => now()->parse($request->start_date)->addMonths($i - 1)->toDateString(),
+                'due_date' => Carbon::parse($request->start_date)->addMonths($i - 1)->toDateString(),
             ]);
         }
 
-        return redirect()->route('payment-plans.show', $treatment->id)
-                         ->with('success', 'Plan de pagos generado correctamente.');
+        return redirect()->route('payment_plans.show', $treatment->id)
+            ->with('success', 'Plan de pagos generado correctamente.');
     }
 
-    // Editar una cuota
+    /**
+     * Editar una cuota
+     */
     public function editInstallment(PaymentPlanInstallment $installment)
     {
         return view('payment_plans.edit_installment', compact('installment'));
     }
 
-    // Actualizar cuota
+    /**
+     * Actualizar cuota
+     */
     public function updateInstallment(Request $request, PaymentPlanInstallment $installment)
     {
         $request->validate([
@@ -77,11 +99,13 @@ class PaymentPlanController extends Controller
             'due_date' => $request->due_date,
         ]);
 
-        return redirect()->route('payment-plans.show', $installment->paymentPlan->treatment_id)
-                         ->with('success', 'Cuota actualizada correctamente.');
+        return redirect()->route('payment_plans.show', $installment->paymentPlan->treatment_id)
+            ->with('success', 'Cuota actualizada correctamente.');
     }
 
-    // Opcional: eliminar plan de pagos
+    /**
+     * Eliminar plan de pagos completo
+     */
     public function destroy(PaymentPlan $plan)
     {
         $plan->delete();

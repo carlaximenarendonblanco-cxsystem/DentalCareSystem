@@ -105,7 +105,13 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::post('/clinics-search', [ClinicController::class, 'search'])->name('clinics.search');
 
     Route::prefix('treatments')->group(function () {
-        Route::get('{treatment}/payment-plan/create', [PaymentPlanController::class, 'create'])->name('payment_plans.create');
-        Route::get('{treatment}/payment-plan', [PaymentPlanController::class, 'show'])->name('payment_plans.show');
+        Route::get('{treatment}/payment-plan/create', [PaymentPlanController::class, 'create'])
+            ->name('payment_plans.create');
+
+        Route::post('{treatment}/payment-plan/store', [PaymentPlanController::class, 'store'])
+            ->name('payment_plans.store');
+
+        Route::get('{treatment}/payment-plan', [PaymentPlanController::class, 'show'])
+            ->name('payment_plans.show');
     });
 });
