@@ -29,30 +29,36 @@ class PaymentPlanController extends Controller
      */
     public function show(Treatment $treatment)
     {
-        // Obtener plan con sus cuotas
-        $plan = $treatment->paymentPlan()->with('installments')->first();
+        $plan = $treatment->paymentPlan;
 
         if (!$plan) {
-            // Plan vacío
+            // Si no hay plan, crear uno temporal con colección vacía
             $plan = new PaymentPlan();
-            $plan->installments = collect();        // colección vacía para isEmpty()
-            $plan->installments_count = 0;          // número de cuotas
+            $plan->installments_relation = collect();  // colección vacía de cuotas
+            $plan->installments_count = 0;
             $plan->amount_per_installment = 0;
         } else {
-            // asegurar que installments sea colección
-            $plan->installments = $plan->installments ?? collect();
+            // Obtener la relación de cuotas
+            $plan->installments_relation = $plan->installments()->get();
 
-            // número total de cuotas
-            $plan->installments_count = $plan->installments->count();
+            // Número de cuotas generadas
+            $plan->installments_count = $plan->installments_relation->count();
 
-            // calcular monto por cuota si no está definido
+            // Calcular monto por cuota si no está definido
             if (!$plan->amount_per_installment && $plan->installments_count > 0) {
-                $plan->amount_per_installment = round($plan->installments->sum('amount') / $plan->installments_count, 2);
+                $plan->amount_per_installment = round(
+                    $plan->installments_relation->sum('amount') / $plan->installments_count,
+                    2
+                );
             }
         }
 
-        return view('payment_plans.show', compact('treatment', 'plan'));
+        return view('payment_plans.show', [
+            'treatment' => $treatment,
+            'plan' => $plan,
+        ]);
     }
+
 
     /**
      * Guardar plan de pagos

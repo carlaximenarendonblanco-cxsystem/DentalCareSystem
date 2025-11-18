@@ -87,29 +87,27 @@
 </head>
 
 <body>
-    <header style="margin-bottom: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+    <header style="margin-bottom: 20px; width: 100%;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <!-- Columna del logo -->
+                <td style="width: 150px; vertical-align: middle;">
+                    @if(!empty($clinic->logo))
+                    <img src="data:image/png;base64,{{ $clinic->logo }}"
+                        alt="Logo Clínica"
+                        style="max-height: 80px; max-width: 150px; object-fit: contain;">
+                    @endif
+                </td>
 
-            <!-- Logo a la izquierda -->
-            @if(!empty($clinic->logo))
-            <div class="clinic-logo" style="width: 150px; display: flex; align-items: center;">
-                <img src="data:image/png;base64,{{ $clinic->logo }}"
-                    alt="Logo Clínica"
-                    style="max-height: 80px; max-width: 150px; object-fit: contain;">
-            </div>
-            @endif
-
-            <!-- Información alineada a la derecha y centrada verticalmente -->
-            <div class="clinic-info" style="text-align: right; line-height: 1.2; display: flex; flex-direction: column; justify-content: center;">
-                <p style="margin: 0;"><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
-                <p style="margin: 0;">{{ $clinic->address ?? 'Dirección no registrada' }}</p>
-                <p style="margin: 0;">Teléfono: {{ $clinic->phone ?? 'N/A' }}</p>
-            </div>
-
-        </div>
+                <!-- Columna de información -->
+                <td style="text-align: right; vertical-align: middle; line-height: 1.2;">
+                    <p style="margin: 0;"><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
+                    <p style="margin: 0;">{{ $clinic->address ?? 'Dirección no registrada' }}</p>
+                    <p style="margin: 0;">Teléfono: {{ $clinic->phone ?? 'N/A' }}</p>
+                </td>
+            </tr>
+        </table>
     </header>
-
-
 
     <h1>PRESUPUESTO TRATAMIENTO DENTAL</h1>
 
