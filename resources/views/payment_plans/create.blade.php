@@ -26,14 +26,12 @@
         @csrf
 
         <div class="flex flex-col sm:flex-row gap-4">
+
             <div class="flex-1">
                 <label class="title4">{{ __('Número de cuotas') }}</label>
                 <input type="number" name="installments" value="1" min="1" class="input1" required>
             </div>
-            <div class="flex-1">
-                <label class="title4">{{ __('Monto por cuota (sugerido)') }}</label>
-                <input type="number" name="amount_per_installment" value="{{ number_format($treatment->amount, 2) }}" step="0.01" min="0" class="input1" required>
-            </div>
+
             <div class="flex-1">
                 <label class="title4">{{ __('Fecha de inicio') }}</label>
                 <input type="date" name="start_date" value="{{ date('Y-m-d') }}" class="input1" required>
@@ -41,7 +39,7 @@
         </div>
 
         <div class="flex justify-end gap-2 mt-4">
-            <a href="{{ route('payments.show', $treatment->id) }}" class="botton2">{{ __('Volver') }}</a>
+            <a href="{{ url()->previous() }}" class="botton2">{{ __('Volver') }}</a>
             <button type="submit" class="botton1">{{ __('Generar Plan') }}</button>
         </div>
     </form>

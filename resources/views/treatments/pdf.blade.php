@@ -91,6 +91,7 @@
         @if(!empty($clinic->logo))
         <img src="data:image/png;base64,{{ $clinic->logo }}" alt="Logo Clínica">
         @endif
+
         <div class="clinic-info">
             <p><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
             <p>{{ $clinic->address ?? 'Dirección no registrada' }}</p>
