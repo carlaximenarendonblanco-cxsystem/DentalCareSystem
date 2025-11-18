@@ -15,12 +15,11 @@ return new class extends Migration
     {
         Schema::create('payment_plan_installments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('payment_plan_id')->constrained('payment_plans')->cascadeOnDelete();
-            $table->integer('number'); // número de cuota
-            $table->decimal('amount', 10, 2); // monto de la cuota
-            $table->date('due_date'); // fecha de vencimiento
-            $table->boolean('paid')->default(false); // si ya fue pagada
-            $table->date('paid_at')->nullable(); // fecha de pago
+            $table->foreignId('payment_plan_id')->constrained()->cascadeOnDelete();
+            $table->integer('number');
+            $table->decimal('amount', 10, 2);
+            $table->date('due_date');
+            $table->boolean('is_paid')->default(false);
             $table->timestamps();
         });
     }

@@ -11,14 +11,9 @@ class PaymentPlanInstallment extends Model
 
     protected $guarded = [];
 
-    public function treatment()
+    public function paymentPlan()
     {
-        return $this->belongsTo(Treatment::class);
-    }
-
-    public function installments()
-    {
-        return $this->hasMany(PaymentPlanInstallment::class);
+        return $this->belongsTo(PaymentPlan::class);
     }
     
 }

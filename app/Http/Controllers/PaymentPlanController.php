@@ -29,39 +29,56 @@ class PaymentPlanController extends Controller
      */
     public function show(Treatment $treatment)
     {
-        $plan = $treatment->paymentPlan()->with('installments')->first();
+        $plan = $treatment->paymentPlan()
+            ->with('installments')
+            ->first();
 
-        // Asegurarse que $plan->installments siempre sea colección
-        if ($plan) {
-            $plan->installments = $plan->installments ?? collect();
-        } else {
-            $plan = new PaymentPlan(); // evitar errores en la vista
-            $plan->installments = collect();
+        if (!$plan) {
+            $plan = new PaymentPlan();
         }
+
+        // Siempre devolver una colección
+        $plan->installments = $plan->installments ?? collect();
 
         return view('payment_plans.show', compact('treatment', 'plan'));
     }
 
     /**
-     * Guardar un nuevo plan de pagos
+     * Guardar plan de pagos
      */
     public function store(Request $request, Treatment $treatment)
     {
         $request->validate([
             'name' => 'nullable|string|max:255',
-            'installments' => 'required|integer|min:1',
-            'start_date' => 'required|date',
-            'amount_per_installment' => 'nullable|numeric|min:0',
+            'mode' => 'required|in:auto,custom',
+
+            // AUTOMÁTICO
+            'auto_installments' => 'required_if:mode,auto|integer|min:1',
+            'start_date' => 'required_if:mode,auto|date',
+
+            // PERSONALIZADO
+            'installments' => 'required_if:mode,custom|array|min:1',
+            'installments.*.amount' => 'required_if:mode,custom|numeric|min:0.1',
+            'installments.*.due_date' => 'required_if:mode,custom|date',
         ]);
 
         if ($treatment->paymentPlan) {
-            return redirect()->back()->with('error', 'El tratamiento ya tiene un plan de pagos.');
+            return back()->with('error', 'Este tratamiento ya tiene un plan de pagos.');
         }
 
-        $installments = $request->installments;
-        $amountPerInstallment = $request->amount_per_installment ?? round($treatment->amount / $installments, 2);
+        return $request->mode === 'auto'
+            ? $this->storeAutomatic($request, $treatment)
+            : $this->storeCustom($request, $treatment);
+    }
 
-        // Crear plan
+    /**
+     * Guardar plan automático
+     */
+    private function storeAutomatic(Request $request, Treatment $treatment)
+    {
+        $installments = $request->auto_installments;
+        $amountPerInstallment = round($treatment->amount / $installments, 2);
+
         $plan = PaymentPlan::create([
             'treatment_id' => $treatment->id,
             'name' => $request->name,
@@ -71,56 +88,48 @@ class PaymentPlanController extends Controller
             'created_by' => Auth::id(),
         ]);
 
-        // Generar cuotas
         for ($i = 1; $i <= $installments; $i++) {
             PaymentPlanInstallment::create([
                 'payment_plan_id' => $plan->id,
                 'number' => $i,
                 'amount' => $amountPerInstallment,
-                'due_date' => Carbon::parse($request->start_date)->addMonths($i - 1)->toDateString(),
+                'due_date' => Carbon::parse($request->start_date)->addMonths($i - 1),
             ]);
         }
 
         return redirect()->route('payment_plans.show', $treatment->id)
-            ->with('success', 'Plan de pagos generado correctamente.');
+            ->with('success', 'Plan automático generado.');
     }
 
     /**
-     * Editar una cuota
+     * Guardar plan personalizado
      */
-    public function editInstallment(PaymentPlanInstallment $installment)
+    private function storeCustom(Request $request, Treatment $treatment)
     {
-        return view('payment_plans.edit_installment', compact('installment'));
-    }
+        $total = collect($request->installments)->sum('amount');
 
-    /**
-     * Actualizar cuota individual
-     */
-    public function updateInstallment(Request $request, PaymentPlanInstallment $installment)
-    {
-        $request->validate([
-            'amount' => 'required|numeric|min:0',
-            'due_date' => 'required|date',
+        if (round($total, 2) !== round($treatment->amount, 2)) {
+            return back()->with('error', 'La suma de montos no coincide con el costo total del tratamiento.');
+        }
+
+        $plan = PaymentPlan::create([
+            'treatment_id' => $treatment->id,
+            'name' => $request->name,
+            'installments' => count($request->installments),
+            'start_date' => $request->installments[0]['due_date'],
+            'created_by' => Auth::id(),
         ]);
 
-        $installment->update([
-            'amount' => $request->amount,
-            'due_date' => $request->due_date,
-        ]);
+        foreach ($request->installments as $i => $data) {
+            PaymentPlanInstallment::create([
+                'payment_plan_id' => $plan->id,
+                'number' => $i + 1,
+                'amount' => $data['amount'],
+                'due_date' => $data['due_date'],
+            ]);
+        }
 
-        return redirect()->route('payment_plans.show', $installment->paymentPlan->treatment_id)
-            ->with('success', 'Cuota actualizada correctamente.');
-    }
-
-    /**
-     * Eliminar plan de pagos completo junto a sus cuotas
-     */
-    public function destroy(PaymentPlan $plan)
-    {
-        // Eliminar cuotas asociadas
-        $plan->installments()->delete();
-
-        $plan->delete();
-        return redirect()->back()->with('success', 'Plan de pagos eliminado.');
+        return redirect()->route('payment_plans.show', $treatment->id)
+            ->with('success', 'Plan personalizado generado.');
     }
 }

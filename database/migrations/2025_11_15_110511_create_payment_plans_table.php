@@ -15,13 +15,13 @@ return new class extends Migration
     {
         Schema::create('payment_plans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('treatment_id')->constrained()->cascadeOnDelete(); // Relación con el tratamiento
+            $table->foreignId('treatment_id')->constrained()->cascadeOnDelete();
             $table->string('name')->nullable();
             $table->integer('installments')->default(1);
             $table->decimal('amount_per_installment', 10, 2)->nullable();
             $table->date('start_date')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('edit_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users');
+            $table->foreignId('edit_by')->nullable()->constrained('users');
             $table->timestamps();
         });
     }

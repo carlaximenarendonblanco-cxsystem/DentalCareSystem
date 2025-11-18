@@ -11,8 +11,7 @@ class PaymentPlan extends Model
 {
     use HasFactory;
     protected $guarded = [];
-
-    public function treatment()
+ public function treatment()
     {
         return $this->belongsTo(Treatment::class);
     }
@@ -29,6 +28,6 @@ class PaymentPlan extends Model
 
     public function editor()
     {
-        return $this->belongsTo(User::class, 'edit_by');
+        return $this->belongsTo(User::class, 'edit_by'); // ← CORREGIDO
     }
 }

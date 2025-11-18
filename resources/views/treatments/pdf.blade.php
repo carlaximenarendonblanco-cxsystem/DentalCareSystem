@@ -88,17 +88,23 @@
 
 <body>
     <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+
+        <div class="clinic-info" style="text-align: left; line-height: 1.2;">
+            <p style="margin: 0;"><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
+            <p style="margin: 0;">{{ $clinic->address ?? 'Dirección no registrada' }}</p>
+            <p style="margin: 0;">Teléfono: {{ $clinic->phone ?? 'N/A' }}</p>
+        </div>
+
         @if(!empty($clinic->logo))
-        <div class="clinic-logo" style="text-align: right;">
-            <img src="data:image/png;base64,{{ $clinic->logo }}" alt="Logo Clínica" style="max-height: 60px; object-fit: contain;">
+        <div class="clinic-logo" style="width: 120px; display: flex; justify-content: flex-end;">
+            <img src="data:image/png;base64,{{ $clinic->logo }}"
+                alt="Logo Clínica"
+                style="max-height: 60px; max-width: 120px; object-fit: contain;">
         </div>
         @endif
-        <div class="clinic-info" style="text-align: left;">
-            <p><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
-            <p>{{ $clinic->address ?? 'Dirección no registrada' }}</p>
-            <p>Teléfono: {{ $clinic->phone ?? 'N/A' }}</p>
-        </div>
+
     </header>
+
 
 
     <h1>PRESUPUESTO TRATAMIENTO DENTAL</h1>
