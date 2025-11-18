@@ -105,8 +105,6 @@
 
     </header>
 
-
-
     <h1>PRESUPUESTO TRATAMIENTO DENTAL</h1>
 
     <div class="patient-info">
