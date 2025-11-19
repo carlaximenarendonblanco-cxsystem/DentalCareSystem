@@ -92,14 +92,14 @@
 
             <div id="customList" class="flex flex-col gap-4"></div>
 
-            <button type="button" id="addInstallment" class="botton2 w-48">
+            <button type="button" id="addInstallment" class="botton3 w-48">
                 {{ __('Agregar Cuota') }}
             </button>
         </div>
 
         <div class="flex justify-end gap-3 pt-4">
-            <a href="{{ url()->previous() }}" class="botton2">{{ __('Volver') }}</a>
-            <button type="submit" class="botton1">{{ __('Generar Plan') }}</button>
+            <a href="{{ url()->previous() }}" class="botton3">{{ __('Volver') }}</a>
+            <button type="submit" class="botton2">{{ __('Generar Plan') }}</button>
         </div>
 
     </form>

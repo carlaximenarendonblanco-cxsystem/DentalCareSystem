@@ -4,7 +4,6 @@
             ¡{{ __('Bienvenido ') }} {{ Auth::user()->name }}!
         </h2>
     </x-slot>
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-white overflow-hidden shadow-xl sm:rounded-lg p-4 md:p-8">
@@ -77,7 +76,6 @@
                                 <p class="text-gray-600 mt-2 text-sm">{{ __('Realizar seguimiento y gestionar operaciones pagos.') }}</p>
                             </div>
                         </a>
-
                     </div>
                 </section>
             </div>

@@ -28,7 +28,6 @@
         <div class="title4">{{ __('Costo Final') }}</div>
         <div class="title4">{{ __('Presupuestado por') }}</div>
         <div class="title4">{{ __('Pagos') }}</div>
-        <div class="title4">{{ __('Acciones') }}</div>
     </div>
 
     @forelse($treatments as $treatment)
