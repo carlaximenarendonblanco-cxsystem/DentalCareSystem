@@ -9,6 +9,8 @@
     @if($remaining > 0)
     <a href="{{ route('payments.create', $treatment->id) }}" class="botton1">{{ __('Registrar Pago') }}</a>
     @endif
+</div>
+<div class="flex kjustify-end">
     @if($treatment->paymentPlan)
     <a href="{{ route('payment_plans.show', $treatment->id) }}" class="botton3">{{ __('Ver Plan de Pagos') }}</a>
     @else

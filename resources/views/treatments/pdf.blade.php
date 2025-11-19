@@ -88,10 +88,10 @@
 
 <body>
     <header style="margin-bottom: 20px; width: 100%;">
-        <table style="width: 100%; border-collapse: collapse; border: 1px solid white;">
-            <tr>
+        <table style="width: 100%; border-collapse: collapse; border: none;">
+            <tr style="border: none;">
                 <!-- Columna del logo -->
-                <td style="width: 150px; vertical-align: middle;">
+                <td style="width: 150px; vertical-align: middle; border: none;">
                     @if(!empty($clinic->logo))
                     <img src="data:image/png;base64,{{ $clinic->logo }}"
                         alt="Logo Clínica"
@@ -99,8 +99,7 @@
                     @endif
                 </td>
 
-                <!-- Columna de información -->
-                <td style="text-align: right; vertical-align: middle; line-height: 1.2;">
+                <td style="text-align: right; vertical-align: middle; line-height: 1.2; border: none;">
                     <p style="margin: 0;"><strong>{{ $clinic->name ?? 'Nombre de la Clínica' }}</strong></p>
                     <p style="margin: 0;">{{ $clinic->address ?? 'Dirección no registrada' }}</p>
                     <p style="margin: 0;">Teléfono: {{ $clinic->phone ?? 'N/A' }}</p>
@@ -108,6 +107,7 @@
             </tr>
         </table>
     </header>
+
 
     <h1>PRESUPUESTO TRATAMIENTO DENTAL</h1>
 

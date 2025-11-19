@@ -65,7 +65,7 @@
     @forelse($patients as $patient)
     <div class="bg-white rounded-lg shadow-md p-4 flex flex-col gap-2 hover:shadow-lg transition">
         <div class="flex justify-between items-center">
-            <div class="font-semibold text-gray-700">{{ $patient->name_patient }}</div>
+            <div class="font-semibold text-gray-700"><a href="{{ route('patient.show', $patient->id) }}">{{ $patient->name_patient }}</a></div>
             <div class="text-gray-500 text-sm">{{ $patient->ci_patient }}</div>
         </div>
         <div class="text-gray-600">Fecha de nacimiento: {{ $patient->birth_date }}</div>
