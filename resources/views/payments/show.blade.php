@@ -10,13 +10,48 @@
     <a href="{{ route('payments.create', $treatment->id) }}" class="botton1">{{ __('Registrar Pago') }}</a>
     @endif
 </div>
-<div class="flex kjustify-end">
+<div class="p-5 pb-1 gap-3">
+
     @if($treatment->paymentPlan)
-    <a href="{{ route('payment_plans.show', $treatment->id) }}" class="botton3">{{ __('Ver Plan de Pagos') }}</a>
+
+    @php $plan = $treatment->paymentPlan; @endphp
+
+    <div class="bg-gray-100 p-4 rounded-lg shadow-sm">
+
+        <p><strong>{{ __('Monto total del tratamiento:') }}</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
+
+        <p><strong>{{ __('Número de cuotas:') }}</strong> {{ $plan->installments_count ?? 0 }}</p>
+
+        @if($plan->amount_per_installment)
+        <p><strong>{{ __('Monto por cuota:') }}</strong> Bs. {{ number_format($plan->amount_per_installment, 2) }}</p>
+        @endif
+
+        <p><strong>{{ __('Cuotas pagadas:') }}</strong>
+            {{ $plan->installments_relation->where('paid', true)->count() }} / {{ $plan->installments_relation->count() }}
+        </p>
+
+        <div class="flex justify-end pt-3">
+            <a href="{{ route('payment_plans.show', $treatment->id) }}" class="botton3">
+                {{ __('Ver Detalle Completo') }}
+            </a>
+        </div>
+
+    </div>
+
     @else
-    <a href="{{ route('payment_plans.create', $treatment->id) }}" class="botton3">{{ __('Generar Plan de Pagos') }}</a>
+
+    <p>El paciente no cuenta con plan de pagos</p>
+    <div class="flex justify-end">
+        <a href="{{ route('payment_plans.create', $treatment->id) }}" class="botton3">
+            {{ __('Generar Plan de Pagos') }}
+        </a>
+    </div>
+
     @endif
+
 </div>
+
+
 
 <div class="max-w-5xl mx-auto bg-white rounded-xl p-4 text-gray-900">
     <!-- Resumen del tratamiento -->
