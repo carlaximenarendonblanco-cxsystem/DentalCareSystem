@@ -105,7 +105,7 @@ class TreatmentController extends Controller
         // PDF
         $budgets = Budget::whereIn('id', array_keys($budgetCodes))->get();
         $clinic = $user->clinic;
-        $pdf = Pdf::loadView('cotizacion.pdf', [
+        $pdf = Pdf::loadView('treatments.pdf', [
             'treatment' => $treatment,
             'budgets'   => $budgets,
             'author'    => $user->name,
