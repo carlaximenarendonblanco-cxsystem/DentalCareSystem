@@ -17,9 +17,9 @@ class UserSeeder extends Seeder
     public function run()
     {
         User::updateOrCreate(
-            ['email' => 'superadmin@dentalcare.com'],
+            ['email' => 'carlaximenarb@gmail.com'],
             [
-                'name' => 'Super Admin',
+                'name' => 'Carla Rendon',
                 'ci' => '8671485',
                 'password' => Hash::make('8671485'),
                 'role' => 'superadmin',
