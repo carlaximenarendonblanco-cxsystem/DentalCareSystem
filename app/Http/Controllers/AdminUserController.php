@@ -21,8 +21,8 @@ class AdminUserController extends Controller
         $users = Auth::user()->role === 'superadmin'
             ? User::with('clinic')->simplePaginate(10)
             : User::with('clinic')
-                ->where('clinic_id', Auth::user()->clinic_id)
-                ->simplePaginate(10);
+            ->where('clinic_id', Auth::user()->clinic_id)
+            ->simplePaginate(10);
 
         return view('admin.users', compact('users'));
     }
@@ -30,9 +30,10 @@ class AdminUserController extends Controller
     // Formulario de creación
     public function create()
     {
-        if (Auth::user()->role !== 'superadmin') {
+        if (Auth::user()->role !== 'superadmin' && Auth::user()->role !== 'admin') {
             abort(403, 'No tienes permiso para crear usuarios');
         }
+
 
         $clinics = Clinic::all();
         return view('admin.create', compact('clinics'));
@@ -146,8 +147,8 @@ class AdminUserController extends Controller
         $users = User::with('clinic')
             ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
-                  ->orWhere('email', 'like', "%{$query}%")
-                  ->orWhere('ci', 'like', "%{$query}%");
+                    ->orWhere('email', 'like', "%{$query}%")
+                    ->orWhere('ci', 'like', "%{$query}%");
             });
 
         if (Auth::user()->role !== 'superadmin') {
