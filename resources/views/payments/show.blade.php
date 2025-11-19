@@ -22,12 +22,12 @@
     @endphp
 
     <div class="bg-gray-100 p-4 rounded-lg shadow-sm p-5 pb-2">
-        <p>El paciente cuenta con plan de pagos</p>
+        <div class="title-4">DETALLES DEL PLAN DE PAGOS</div>
         <p><strong>{{ __('Monto total del tratamiento:') }}</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
         @if($plan->amount_per_installment)
         <p><strong>{{ __('Monto por cuota:') }}</strong> Bs. {{ number_format($plan->amount_per_installment, 2) }}</p>
         @else
-        <p>{{ __('Los montos de las cuotas son personalizados') }}</p>
+        <p><strong>{{ __('Los montos de las cuotas son personalizados') }}</strong></p>
         @endif
         <div class="flex justify-end pt-3">
             <a href="{{ route('payment_plans.show', $treatment->id) }}" class="botton3">
