@@ -40,11 +40,8 @@
                     {{ __('Ver Detalle Completo') }}
                 </a>
             </div>
-
         </div>
-
     @else
-
         <p class="mb-2">{{ __('El paciente no cuenta con plan de pagos') }}</p>
         <div class="flex justify-end">
             <a href="{{ route('payment_plans.create', $treatment->id) }}" class="botton3">
@@ -53,7 +50,6 @@
         </div>
 
     @endif
-
 </div>
 
 
