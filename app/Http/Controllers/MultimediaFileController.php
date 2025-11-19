@@ -16,9 +16,20 @@ class MultimediaFileController extends Controller
 {
     public function index()
     {
-        $studies = MultimediaFile::with('patient')->latest()->get();
+        $query = MultimediaFile::with('patient')->latest();
+
+        // Si el usuario NO es super admin, filtrar por su clinic_id
+        if (auth()->user()->role !== 'super_admin') {
+            $clinicId = auth()->user()->clinic_id;
+            $query->where('clinic_id', $clinicId);
+        }
+
+        // Paginación: 10 por página
+        $studies = $query->paginate(10);
+
         return view('multimedia.index', compact('studies'));
     }
+
 
     public function create()
     {
@@ -194,9 +205,19 @@ class MultimediaFileController extends Controller
     public function search(Request $request)
     {
         $search = $request->input('search');
-        $files = MultimediaFile::where('ci_patient', 'LIKE', '%' . $search . '%')
+
+        $query = MultimediaFile::where('ci_patient', 'LIKE', '%' . $search . '%')
             ->orWhere('study_date', 'LIKE', '%' . $search . '%')
-            ->orWhere('name_patient', 'LIKE', '%' . $search . '%')->get();
+            ->orWhere('name_patient', 'LIKE', '%' . $search . '%');
+
+        // Filtrar por clínica si no es super_admin
+        if (auth()->user()->role !== 'super_admin') {
+            $clinicId = auth()->user()->clinic_id;
+            $query->where('clinic_id', $clinicId);
+        }
+
+        $files = $query->latest()->paginate(10);
+
         return view('multimedia.search', compact('files'));
     }
 
