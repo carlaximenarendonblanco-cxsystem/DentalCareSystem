@@ -87,7 +87,7 @@
 </head>
 
 <body>
-    <header style="margin-bottom: 40px; width: 100%;">
+    <header style="margin-bottom: 20px; width: 100%;">
         <table style="width: 100%; border-collapse: collapse; border: none;">
             <tr style="border: none;">
                 <!-- Columna del logo -->
