@@ -127,37 +127,7 @@ class EventController extends Controller
                 'creator_name' => $event->creator->name ?? 'Sin información',
             ];
         }
-
-        $installments = \App\Models\PaymentPlanInstallment::with([
-            'paymentPlan.treatment.patient'
-        ])->get();
-
-        foreach ($installments as $cuota) {
-
-            // --- Seguridad total: evitar errores ---
-            $plan = $cuota->paymentPlan;
-            $treatment = $plan->treatment ?? null;
-            $patient = $treatment?->patient ?? null;
-            $patientName = $patient->name ?? 'Paciente';
-
-            $events[] = [
-    'id' => 'cuota-' . ($cuota->id ?? 0),
-    'title' => 'Vencimiento de cuota - ' . $patientName,
-    'start' => \Carbon\Carbon::parse($cuota->due_date)->toDateString(),
-    'end' => \Carbon\Carbon::parse($cuota->due_date)->toDateString(),
-    'type' => 'cuota',
-    'amount' => $cuota->amount ?? 0,
-    'status' => $cuota->is_paid ? 'Pagado' : 'Pendiente',
-    'plan_id' => $cuota->payment_plan_id,
-    'doctor' => '',
-    'room' => '',
-    'creator_name' => 'Sistema',
-];
-
-        }
-
-
-
+        
         return view('events.index', compact('events'));
     }
 
@@ -253,3 +223,4 @@ class EventController extends Controller
         return redirect()->route('events.index')->with('danger', 'Cita eliminada.');
     }
 }
+
