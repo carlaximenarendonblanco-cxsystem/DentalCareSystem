@@ -42,7 +42,7 @@ class AdminUserController extends Controller
     // Almacenar nuevo usuario
     public function store(Request $request)
     {
-        if (Auth::user()->role !== 'superadmin') {
+        if (Auth::user()->role !== 'superadmin' && Auth::user()->role !== 'admin')  {
             abort(403, 'No tienes permiso para crear usuarios');
         }
 
