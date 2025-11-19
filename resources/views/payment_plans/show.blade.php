@@ -1,7 +1,7 @@
 @extends('layouts._partials.layout')
 @section('title', __('Plan de Pagos'))
 @section('subtitle')
-    {{ __('Detalle del Plan de Pagos') }}
+{{ __('Detalle del Plan de Pagos') }}
 @endsection
 
 @section('content')
@@ -12,46 +12,43 @@
     </div>
 
     <div class="mb-4">
-        <p><strong>{{ __('Paciente:') }}</strong> {{ $treatment->name ?? 'N/A' }}</p>
-        <p><strong>{{ __('C.I.:') }}</strong> {{ $treatment->ci_patient ?? 'N/A' }}</p>
-        <p><strong>{{ __('Tratamiento:') }}</strong> {{ $treatment->name ?? 'N/A' }}</p>
-        <p><strong>{{ __('Monto total:') }}</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
-        <p><strong>{{ __('Número de cuotas:') }}</strong> {{ $plan->installments_count ?? 0 }}</p>
+        <p class="p-3"><strong>{{ __('Paciente:') }}</strong> {{ $treatment->name ?? 'N/A' }}</p>
+        <p class="p-3"><strong>{{ __('C.I.:') }}</strong> {{ $treatment->ci_patient ?? 'N/A' }}</p>
+        <p class="p-3"><strong>{{ __('Monto total:') }}</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
+        <p class="p-3"><strong>{{ __('Número de cuotas:') }}</strong> {{ $plan->installments_count ?? 0 }}</p>
         @if($plan->amount_per_installment)
-            <p><strong>{{ __('Monto por cuota:') }}</strong> Bs. {{ number_format($plan->amount_per_installment, 2) }}</p>
+        <p class="p-3"><strong>{{ __('Monto promedio por cuota promedio:') }}</strong> Bs. {{ number_format($plan->amount_per_installment, 2) }}</p>
         @endif
     </div>
 
     <h2 class="title2 text-center py-4">{{ __('Cuotas Generadas') }}</h2>
 
     @if($plan->installments_relation->isEmpty())
-        <p class="text-gray-600 text-center">{{ __('No se han generado cuotas.') }}</p>
+    <p class="text-gray-600 text-center">{{ __('No se han generado cuotas.') }}</p>
     @else
-        <div class="grid grid-cols-4 font-semibold border-b border-gray-300 pb-2 mb-2 text-center">
-            <div>#</div>
-            <div>{{ __('Monto') }}</div>
-            <div>{{ __('Fecha de vencimiento') }}</div>
+    <div class="grid grid-cols-4 font-semibold border-b border-gray-300 pb-2 mb-2 text-center">
+        <div>{{ __('Cuota') }}</div>
+        <div>{{ __('Monto') }}</div>
+        <div>{{ __('Fecha de vencimiento') }}</div>
+    </div>
+
+    @foreach($plan->installments_relation as $i => $cuota)
+    <div class="grid grid-cols-4 border-b border-gray-200 py-2 text-center items-center hover:bg-gray-50">
+
+        <div>{{ $i + 1 }}</div>
+        <div>Bs. {{ number_format($cuota->amount, 2) }}</div>
+        <div>{{ \Carbon\Carbon::parse($cuota->due_date)->format('d/m/Y') }}</div>
+
+        <div class="flex justify-center">
+            @if(!$cuota->paid)
+            <a href="{{ route('payments.create', $treatment->id) }}" class="botton3">
+                {{ __('Registrar Pago') }}
+            </a>
+            @endif
         </div>
 
-        @foreach($plan->installments_relation as $i => $cuota)
-            <div class="grid grid-cols-4 border-b border-gray-200 py-2 text-center items-center hover:bg-gray-50">
-
-                <div>{{ $i + 1 }}</div>
-                <div>Bs. {{ number_format($cuota->amount, 2) }}</div>
-                <div>{{ \Carbon\Carbon::parse($cuota->due_date)->format('d/m/Y') }}</div>
-
-                <div>Bs. {{ number_format($cuota->paid_amount ?? 0, 2) }}</div>
-
-                <div class="flex justify-center">
-                    @if(!$cuota->paid)
-                        <a href="{{ route('payments.create', $treatment->id) }}" class="botton3">
-                            {{ __('Registrar Pago') }}
-                        </a>
-                    @endif
-                </div>
-
-            </div>
-        @endforeach
+    </div>
+    @endforeach
     @endif
 </div>
 @endsection

@@ -120,6 +120,13 @@
                 font-weight: 600;
             }
 
+            .fc-event.fc-event-cuota {
+                background-color: #ffbb33;
+                border-color: #ffaa00;
+                color: #000;
+            }
+
+
             /* Eventos más compactos en móviles */
             @media (max-width: 640px) {
                 .fc .fc-daygrid-event {
@@ -242,10 +249,37 @@
                         }
                     },
                     eventClick: function(info) {
-                        const eventId = info.event.id;
-                        window.location.href = `/events/${eventId}`;
+                        const event = info.event;
+
+                        if (event.extendedProps.type === 'cuota') {
+                            // Redirige al plan de pagos de esa cuota
+                            const planId = event.extendedProps.plan_id;
+                            window.location.href = `/payment_plans/${planId}`;
+                        } else {
+                            // Redirige a la cita normal
+                            window.location.href = `/events/${event.id}`;
+                        }
                     }
+
                 });
+
+                eventClassNames: function(arg) {
+                    if (arg.event.extendedProps.type === 'cuota') {
+                        return ['fc-event-cuota']; // clase CSS personalizada
+                    }
+
+                    // tus colores de salas existentes
+                    const colors = ['Sala-1', 'Sala-2', 'Sala-3', 'Sala-4', 'Sala-5'];
+                    let roomNumber = 0;
+                    const roomText = arg.event.extendedProps.room || '';
+                    const match = roomText.match(/\d+/);
+                    if (match) roomNumber = parseInt(match[0], 10);
+                    if (roomNumber > 0) {
+                        const index = (roomNumber - 1) % colors.length;
+                        return [colors[index]];
+                    }
+                    return [];
+                }
 
                 calendar.render();
 

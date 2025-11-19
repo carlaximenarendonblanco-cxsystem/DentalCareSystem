@@ -22,12 +22,15 @@
     @endphp
 
     <div class="bg-gray-100 p-4 rounded-lg shadow-sm">
-        <ul class="space-y-2 list-disc list-inside">
-            <p>El paciente tiene plan de pagos</p>
-            @if($plan->amount_per_installment)
-            <li><strong>{{ __('Monto por cuota:') }}</strong> Bs. {{ number_format($plan->amount_per_installment, 2) }}</li>
-            @endif
-        </ul>
+        <p>El paciente cuenta con plan de pagos</p>
+        <p><strong>{{ __('Monto total del tratamiento:') }}</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
+        <p><strong>{{ __('Número de cuotas:') }}</strong> {{ $plan->installments_count ?? 0 }}</p>
+        @if($plan->amount_per_installment)
+        <p><strong>{{ __('Monto por cuota:') }}</strong> Bs. {{ number_format($plan->amount_per_installment, 2) }}</p>
+        @endif
+        <p><strong>{{ __('Cuotas pagadas:') }}</strong>
+            {{ $installments->where('paid', true)->count() }} / {{ $installments->count() }}
+        </p>
         <div class="flex justify-end pt-3">
             <a href="{{ route('payment_plans.show', $treatment->id) }}" class="botton3">
                 {{ __('Ver Detalle Completo') }}
@@ -35,7 +38,7 @@
         </div>
     </div>
     @else
-    <p class="mb-2">{{ __('El paciente no cuenta con plan de pagos') }}</p>
+    <p class="mb-2 text-green-700">{{ __('El paciente no cuenta con plan de pagos') }}</p>
     <div class="flex justify-end">
         <a href="{{ route('payment_plans.create', $treatment->id) }}" class="botton3">
             {{ __('Generar Plan de Pagos') }}
