@@ -1,6 +1,6 @@
 @extends('layouts._partials.layout')
-@section('title', __('Tratamientos'))
-@section('subtitle', __('Lista de tratamientos'))
+@section('title', __('Presupuestos'))
+@section('subtitle', __('Lista de Presupuestos'))
 
 @section('content')
 <div class="flex flex-wrap justify-between items-center p-5 gap-2">

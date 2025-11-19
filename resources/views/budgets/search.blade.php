@@ -1,7 +1,7 @@
 @extends('layouts._partials.layout')
-@section('title','Presupuestos')
+@section('title','Tratamientos')
 @section('subtitle')
-{{ __('Presupuestos') }}
+{{ __('Tratamientos') }}
 @endsection
 
 @section('content')

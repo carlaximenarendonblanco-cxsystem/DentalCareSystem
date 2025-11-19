@@ -1,7 +1,7 @@
 @extends('layouts._partials.layout')
-@section('title','Información del Presupuesto')
+@section('title','Información del Tratamiento')
 @section('subtitle')
-{{ __('Información del Presupuesto') }}
+{{ __('Información del Tratamiento') }}
 @endsection
 @section('content')
 <div class="flex justify-end pt-5 pr-5">
