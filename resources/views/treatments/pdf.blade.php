@@ -168,5 +168,4 @@
         <p>Emitido por: <strong>{{ $author ?? 'N/A' }}</strong></p>
     </footer>
 </body>
-
 </html>
