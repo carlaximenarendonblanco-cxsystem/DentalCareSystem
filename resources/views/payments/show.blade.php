@@ -10,49 +10,32 @@
     <a href="{{ route('payments.create', $treatment->id) }}" class="botton1">{{ __('Registrar Pago') }}</a>
     @endif
 </div>
-<div class="p-5 pb-1 gap-3">
+<h2 class="title2 text-center py-4">{{ __('Cuotas Generadas') }}</h2>
 
-    @if($treatment->paymentPlan)
+@if($plan->installments_relation->isEmpty())
+<p class="text-gray-600 text-center">{{ __('No se han generado cuotas.') }}</p>
+@else
 
-        @php
-            $plan = $treatment->paymentPlan;
-            $installments = $plan->installments_relation ?? collect(); // <-- FIX
-        @endphp
+<div class="grid grid-cols-3 font-semibold border-b border-gray-300 pb-2 mb-2 text-center">
+    <div>#</div>
+    <div>{{ __('Monto') }}</div>
+    <div>{{ __('Fecha de vencimiento') }}</div>
+</div>
 
-        <div class="bg-gray-100 p-4 rounded-lg shadow-sm">
+@foreach($plan->installments_relation as $i => $cuota)
+<div class="grid grid-cols-3 border-b border-gray-200 py-2 text-center items-center hover:bg-gray-50">
 
-            <p><strong>{{ __('Monto total del tratamiento:') }}</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
+    <div>{{ $i + 1 }}</div>
 
-            <p><strong>{{ __('Número de cuotas:') }}</strong> {{ $plan->installments_count ?? 0 }}</p>
+    <div>Bs. {{ number_format($cuota->amount, 2) }}</div>
 
-            @if($plan->amount_per_installment)
-                <p><strong>{{ __('Monto por cuota:') }}</strong> Bs. {{ number_format($plan->amount_per_installment, 2) }}</p>
-            @endif
-
-            <p><strong>{{ __('Cuotas pagadas:') }}</strong> 
-                {{ $installments->where('paid', true)->count() }} / {{ $installments->count() }}
-            </p>
-
-            <div class="flex justify-end pt-3">
-                <a href="{{ route('payment_plans.show', $treatment->id) }}" class="botton3">
-                    {{ __('Ver Detalle Completo') }}
-                </a>
-            </div>
-
-        </div>
-
-    @else
-
-        <p>El paciente no cuenta con plan de pagos</p>
-        <div class="flex justify-end">
-            <a href="{{ route('payment_plans.create', $treatment->id) }}" class="botton3">
-                {{ __('Generar Plan de Pagos') }}
-            </a>
-        </div>
-
-    @endif
+    <div>{{ \Carbon\Carbon::parse($cuota->due_date)->format('d/m/Y') }}</div>
 
 </div>
+@endforeach
+
+@endif
+
 
 
 
