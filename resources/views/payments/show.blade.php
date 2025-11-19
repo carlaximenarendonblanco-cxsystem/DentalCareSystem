@@ -10,61 +10,52 @@
     <a href="{{ route('payments.create', $treatment->id) }}" class="botton1">{{ __('Registrar Pago') }}</a>
     @endif
 </div>
-@php
-    $plan = $treatment->paymentPlan ?? null;
-    $installments = $plan->installments_relation ?? collect();
-@endphp
 
-<div class="max-w-5xl mx-auto bg-white rounded-xl p-6 text-gray-900">
 
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="title1">{{ __('Plan de Pagos del Tratamiento') }}</h1>
-        <a href="{{ url()->previous() }}" class="botton2">{{ __('Volver') }}</a>
-    </div>
+<div class="p-5 pb-1">
 
-    <div class="mb-4">
-        <p><strong>{{ __('Paciente:') }}</strong> {{ $treatment->name ?? 'N/A' }}</p>
-        <p><strong>{{ __('C.I.:') }}</strong> {{ $treatment->ci_patient ?? 'N/A' }}</p>
-        <p><strong>{{ __('Tratamiento:') }}</strong> {{ $treatment->name ?? 'N/A' }}</p>
+    @if($treatment->paymentPlan)
 
-        @if($plan)
-            <p><strong>{{ __('Monto total:') }}</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
-            <p><strong>{{ __('Número de cuotas:') }}</strong> {{ $plan->installments_count ?? $installments->count() }}</p>
+        @php
+            $plan = $treatment->paymentPlan;
+            $installments = $plan->installments_relation ?? collect();
+        @endphp
 
-            @if($plan->amount_per_installment)
-                <p><strong>{{ __('Monto por cuota:') }}</strong> Bs. {{ number_format($plan->amount_per_installment, 2) }}</p>
-            @endif
-        @else
-            <p class="text-gray-600">{{ __('El paciente no cuenta con plan de pagos') }}</p>
-            <div class="flex justify-end mt-2">
-                <a href="{{ route('payment_plans.create', $treatment->id) }}" class="botton3">{{ __('Generar Plan de Pagos') }}</a>
-            </div>
-        @endif
-    </div>
+        <div class="bg-gray-100 p-4 rounded-lg shadow-sm">
 
-    @if($plan)
-        <h2 class="title2 text-center py-4">{{ __('Cuotas Generadas') }}</h2>
+            <ul class="space-y-2 list-disc list-inside">
+                <li><strong>{{ __('Monto total del tratamiento:') }}</strong> Bs. {{ number_format($treatment->amount, 2) }}</li>
+                <li><strong>{{ __('Número de cuotas:') }}</strong> {{ $plan->installments_count ?? 0 }}</li>
+                @if($plan->amount_per_installment)
+                    <li><strong>{{ __('Monto por cuota:') }}</strong> Bs. {{ number_format($plan->amount_per_installment, 2) }}</li>
+                @endif
+                <li>
+                    <strong>{{ __('Cuotas pagadas:') }}</strong> 
+                    {{ $installments->where('paid', true)->count() }} / {{ $installments->count() }}
+                </li>
+            </ul>
 
-        @if($installments->isEmpty())
-            <p class="text-gray-600 text-center">{{ __('No se han generado cuotas.') }}</p>
-        @else
-            <div class="grid grid-cols-3 font-semibold border-b border-gray-300 pb-2 mb-2 text-center">
-                <div>#</div>
-                <div>{{ __('Monto') }}</div>
-                <div>{{ __('Fecha de vencimiento') }}</div>
+            <div class="flex justify-end pt-3">
+                <a href="{{ route('payment_plans.show', $treatment->id) }}" class="botton3">
+                    {{ __('Ver Detalle Completo') }}
+                </a>
             </div>
 
-            @foreach($installments as $i => $cuota)
-                <div class="grid grid-cols-3 border-b border-gray-200 py-2 text-center items-center hover:bg-gray-50">
-                    <div>{{ $i + 1 }}</div>
-                    <div>Bs. {{ number_format($cuota->amount, 2) }}</div>
-                    <div>{{ \Carbon\Carbon::parse($cuota->due_date)->format('d/m/Y') }}</div>
-                </div>
-            @endforeach
-        @endif
+        </div>
+
+    @else
+
+        <p class="mb-2">{{ __('El paciente no cuenta con plan de pagos') }}</p>
+        <div class="flex justify-end">
+            <a href="{{ route('payment_plans.create', $treatment->id) }}" class="botton3">
+                {{ __('Generar Plan de Pagos') }}
+            </a>
+        </div>
+
     @endif
 
 </div>
+
 
 
 

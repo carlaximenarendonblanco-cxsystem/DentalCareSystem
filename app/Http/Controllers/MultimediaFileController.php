@@ -19,11 +19,13 @@ class MultimediaFileController extends Controller
         $studies = MultimediaFile::with('patient')->latest()->get();
         return view('multimedia.index', compact('studies'));
     }
+
     public function create()
     {
         $patients = Patient::all();
         return view('multimedia.create', compact('patients'));
     }
+
     public function edit(MultimediaFile $multimedia)
     {
         return view('multimedia.edit', compact('multimedia'));
@@ -31,7 +33,6 @@ class MultimediaFileController extends Controller
 
     public function update(Request $request, MultimediaFile $multimedia)
     {
-        // 1. Validar datos
         $validated = $request->validate([
             'name_patient' => 'required|string|max:255',
             'ci_patient' => 'required|max:50',
@@ -39,10 +40,11 @@ class MultimediaFileController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        // 2. Llenar el modelo con los datos validados ANTES de la comprobación
         $multimedia->fill($validated);
 
-        // 3. Verificar si realmente hay cambios usando isDirty() sin argumentos
+        // ➜ agregado
+        $multimedia->edit_by = auth()->id();
+
         if ($multimedia->isDirty()) {
             $multimedia->save();
 
@@ -56,6 +58,7 @@ class MultimediaFileController extends Controller
             ->with('info', 'No se detectaron cambios en la información.');
     }
 
+
     public function store(Request $request)
     {
         $request->validate([
@@ -65,6 +68,13 @@ class MultimediaFileController extends Controller
             'images.*' => 'nullable|mimes:png,jpg,jpeg|max:10240',
             'folder' => 'nullable|file|mimetypes:application/zip,application/x-zip-compressed'
         ]);
+
+        // --- AGREGADO PARA EVITAR EL ERROR DE clinic_id NULL ---
+        $clinicId = auth()->user()->clinic_id ?? null;
+        if (!$clinicId) {
+            abort(403, 'No tienes una clínica asociada. No se puede crear el estudio.');
+        }
+        // --------------------------------------------------------
 
         $studyCode = strtoupper(Str::random(8));
         $studyDate = Carbon::now()->toDateString();
@@ -122,6 +132,9 @@ class MultimediaFileController extends Controller
             'study_uri' => $relativePath,
             'description' => $request->input('description'),
             'image_count' => $count,
+            'clinic_id' => $clinicId,      // ← AGREGADO
+            'created_by' => auth()->id(),  // ← AGREGADO
+            'edit_by' => auth()->id(),     // ← AGREGADO
         ]);
 
         return redirect()->route('multimedia.index')->with('success', 'Estudio cargado correctamente.');
@@ -177,6 +190,7 @@ class MultimediaFileController extends Controller
         $study->delete();
         return redirect()->route('multimedia.index')->with('danger', 'Estudio eliminado correctamente.');
     }
+
     public function search(Request $request)
     {
         $search = $request->input('search');
@@ -185,6 +199,7 @@ class MultimediaFileController extends Controller
             ->orWhere('name_patient', 'LIKE', '%' . $search . '%')->get();
         return view('multimedia.search', compact('files'));
     }
+
     public function measure($id)
     {
         $study = MultimediaFile::findOrFail($id);
@@ -214,6 +229,7 @@ class MultimediaFileController extends Controller
 
         return view('multimedia.measure', compact('study', 'imageUrls'));
     }
+
     public function tool($id)
     {
         $study = MultimediaFile::findOrFail($id);

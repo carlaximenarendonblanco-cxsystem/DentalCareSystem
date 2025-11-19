@@ -29,45 +29,52 @@ class AdminUserController extends Controller
 
     // Formulario de creación
     public function create()
-    {
-        if (Auth::user()->role !== 'superadmin' && Auth::user()->role !== 'admin') {
-            abort(403, 'No tienes permiso para crear usuarios');
-        }
-
-
-        $clinics = Clinic::all();
-        return view('admin.create', compact('clinics'));
+{
+    if (Auth::user()->role !== 'superadmin' && Auth::user()->role !== 'admin') {
+        abort(403, 'No tienes permiso para crear usuarios');
     }
 
-    // Almacenar nuevo usuario
-    public function store(Request $request)
-    {
-        if (Auth::user()->role !== 'superadmin' && Auth::user()->role !== 'admin')  {
-            abort(403, 'No tienes permiso para crear usuarios');
-        }
+    // Superadmin elige clínica — Admin no (la hereda)
+    $clinics = Auth::user()->role === 'superadmin' ? Clinic::all() : collect();
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'ci' => 'required|string|max:20|unique:users,ci',
-            'rol' => 'required|string|in:user,doctor,recepcionist,radiology,admin,superadmin',
-            'clinic_id' => 'nullable|exists:clinics,id',
-        ]);
+    return view('admin.create', compact('clinics'));
+}
 
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'ci' => $validated['ci'],
-            'password' => Hash::make($validated['ci']), // Contraseña = CI
-            'role' => $validated['rol'],
-            'clinic_id' => $validated['clinic_id'],
-            'created_by' => Auth::id(),
-            'edit_by' => Auth::id(),
-        ]);
 
-        return redirect()->route('admin.users')
-            ->with('success', 'Usuario creado exitosamente. La contraseña es el CI del usuario.');
+public function store(Request $request)
+{
+    if (Auth::user()->role !== 'superadmin' && Auth::user()->role !== 'admin')  {
+        abort(403, 'No tienes permiso para crear usuarios');
     }
+
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'ci' => 'required|string|max:20|unique:users,ci',
+        'rol' => 'required|string|in:user,doctor,recepcionist,radiology,admin,superadmin',
+        'clinic_id' => 'nullable|exists:clinics,id',  // superadmin lo envía / admin no
+    ]);
+
+    // ✔ clinic_id automático si el creador es admin
+    $clinicId = Auth::user()->role === 'superadmin'
+        ? ($validated['clinic_id'] ?? null)
+        : Auth::user()->clinic_id;
+
+    User::create([
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'ci' => $validated['ci'],
+        'password' => Hash::make($validated['ci']), 
+        'role' => $validated['rol'],
+        'clinic_id' => $clinicId,  // ← corregido
+        'created_by' => Auth::id(),
+        'edit_by' => Auth::id(),
+    ]);
+
+    return redirect()->route('admin.users')
+        ->with('success', 'Usuario creado exitosamente. La contraseña es el CI del usuario.');
+}
+
 
     // Formulario de edición
     public function edit(User $user)
