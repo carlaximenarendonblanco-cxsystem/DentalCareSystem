@@ -59,7 +59,7 @@
     <canvas id="measureCanvas" class="border rounded-lg"></canvas>
 </div>
 
-<p id="scaleMessage" class="text-center text-sm text-red-600 mb-2"></p>
+<p id="scaleMessage" class="text-center text-sm text-yellow-500 mb-2"></p>
 
 <p id="measureOutput" class="font-semibold text-gray-700 text-center mb-4">
     Selecciona una herramienta para comenzar.
@@ -81,8 +81,9 @@ const scaleMessage = document.getElementById('scaleMessage');
 const resetBtn = document.getElementById('resetBtn');
 
 let currentImage;
-let scaleFactor = parseFloat(scaleSelect.value); // Escala personalizada
+let scaleFactor = parseFloat(scaleSelect.value);
 let activeTool = null;
+const measurementColor = '#FFD700'; // amarillo brillante
 
 // === CARGAR IMAGEN ===
 function loadImage(url) {
@@ -90,9 +91,9 @@ function loadImage(url) {
         canvas.clear();
         currentImage = fabricImg;
 
-        // Escalado automático según tamaño de pantalla
-        const maxWidth = window.innerWidth * 0.9;
-        const maxHeight = window.innerHeight * 0.7;
+        // Escalado automático según tamaño máximo
+        const maxWidth = 1200;
+        const maxHeight = 900;
         let autoScale = 1;
 
         if (fabricImg.width > maxWidth || fabricImg.height > maxHeight) {
@@ -100,7 +101,7 @@ function loadImage(url) {
             const heightScale = fabricImg.height / maxHeight;
             autoScale = 1 / Math.max(widthScale, heightScale);
             fabricImg.scale(autoScale);
-            scaleMessage.textContent = `Imagen escalada automáticamente 1:${(1/autoScale).toFixed(1)}`;
+            scaleMessage.textContent = `Imagen escalada automáticamente 1:${Math.round(1/autoScale)}`;
         } else {
             scaleMessage.textContent = '';
         }
@@ -119,7 +120,7 @@ imageSelect.addEventListener('change', (e) => loadImage(e.target.value));
 // === CAMBIO DE ESCALA ===
 scaleSelect.addEventListener('change', (e) => {
     scaleFactor = parseFloat(e.target.value);
-    output.textContent = `Escala seleccionada 1:${(1/scaleFactor).toFixed(2)}`;
+    scaleMessage.textContent = `Escala seleccionada 1:${Math.round(1/scaleFactor)}`;
 });
 
 // === ACTIVAR HERRAMIENTAS ===
@@ -133,24 +134,24 @@ function activateTool(tool) {
     if(tool==='arco') activateArcTool();
 }
 
-// === HERRAMIENTAS ===
+// === DISTANCIA ===
 function activateDistanceTool() {
     let point1 = null;
     canvas.on('mouse:down', function(opt){
         const p = canvas.getPointer(opt.e);
         if(!point1){
             point1 = p;
-            canvas.add(new fabric.Circle({ left:p.x-4, top:p.y-4, radius:4, fill:'red', selectable:false }));
+            canvas.add(new fabric.Circle({ left:p.x-4, top:p.y-4, radius:4, fill:measurementColor, selectable:false }));
         } else {
             const p2 = p;
-            canvas.add(new fabric.Circle({ left:p2.x-4, top:p2.y-4, radius:4, fill:'red', selectable:false }));
-            const line = new fabric.Line([point1.x,point1.y,p2.x,p2.y], { stroke:'lime', strokeWidth:2, selectable:false });
+            canvas.add(new fabric.Circle({ left:p2.x-4, top:p2.y-4, radius:4, fill:measurementColor, selectable:false }));
+            const line = new fabric.Line([point1.x,point1.y,p2.x,p2.y], { stroke:measurementColor, strokeWidth:2, selectable:false });
             canvas.add(line);
 
             const distPx = Math.hypot(p2.x-point1.x, p2.y-point1.y);
             const distMm = distPx * scaleFactor;
-            const text = new fabric.Text(`Distancia: ${distMm.toFixed(2)} mm`, {
-                left:(point1.x+p2.x)/2, top:(point1.y+p2.y)/2-20, fontSize:16, fill:'lime', selectable:false
+            const text = new fabric.Text(`Distancia: ${Math.round(distMm)} mm`, {
+                left:(point1.x+p2.x)/2, top:(point1.y+p2.y)/2-20, fontSize:16, fill:measurementColor, selectable:false
             });
             canvas.add(text);
             point1 = null;
@@ -158,20 +159,21 @@ function activateDistanceTool() {
     });
 }
 
+// === ÁNGULO ===
 function activateAngleTool(){
     let points = [];
     canvas.on('mouse:down', function(opt){
         const p = canvas.getPointer(opt.e);
         points.push(p);
-        canvas.add(new fabric.Circle({ left:p.x-4, top:p.y-4, radius:4, fill:'#29ff1b', selectable:false }));
+        canvas.add(new fabric.Circle({ left:p.x-4, top:p.y-4, radius:4, fill:measurementColor, selectable:false }));
 
         if(points.length===3){
             const [A,B,C]=points;
-            canvas.add(new fabric.Line([A.x,A.y,B.x,B.y],{ stroke:'#29ff1b', strokeWidth:2, selectable:false }));
-            canvas.add(new fabric.Line([B.x,B.y,C.x,C.y],{ stroke:'#29ff1b', strokeWidth:2, selectable:false }));
+            canvas.add(new fabric.Line([A.x,A.y,B.x,B.y],{ stroke:measurementColor, strokeWidth:2, selectable:false }));
+            canvas.add(new fabric.Line([B.x,B.y,C.x,C.y],{ stroke:measurementColor, strokeWidth:2, selectable:false }));
             const angle = calculateAngle(A,B,C);
-            const text = new fabric.Text(`Ángulo: ${angle.toFixed(2)}°`,{
-                left:(A.x+B.x+C.x)/3, top:(A.y+B.y+C.y)/3-30, fontSize:16, fill:'#29ff1b', selectable:false
+            const text = new fabric.Text(`Ángulo: ${Math.round(angle)}°`,{
+                left:(A.x+B.x+C.x)/3, top:(A.y+B.y+C.y)/3-30, fontSize:16, fill:measurementColor, selectable:false
             });
             canvas.add(text);
             points=[];
@@ -189,23 +191,23 @@ function calculateAngle(A,B,C){
     return Math.acos(cosAngle)*180/Math.PI;
 }
 
+// === CONTORNO ===
 function activateContourTool(){
-    let points=[];
-    let line,text;
+    let points=[], line, text;
     canvas.on('mouse:down', function(opt){
         const p = canvas.getPointer(opt.e);
         points.push(p);
-        canvas.add(new fabric.Circle({ left:p.x-4, top:p.y-4, radius:4, fill:'#8607f7', selectable:false }));
+        canvas.add(new fabric.Circle({ left:p.x-4, top:p.y-4, radius:4, fill:measurementColor, selectable:false }));
         if(line) canvas.remove(line);
 
         if(points.length>=2){
             const pathStr = points.map((pt,i)=> i===0?`M ${pt.x} ${pt.y}`:`L ${pt.x} ${pt.y}`).join(' ');
-            line = new fabric.Path(pathStr,{ stroke:'#8607f7', strokeWidth:2, fill:'', selectable:false });
+            line = new fabric.Path(pathStr,{ stroke:measurementColor, strokeWidth:2, fill:'', selectable:false });
             canvas.add(line);
             const length = calculateContourLength(points);
             if(text) canvas.remove(text);
-            text = new fabric.Text(`Longitud: ${length.toFixed(2)} mm`,{
-                left:points[points.length-1].x, top:points[points.length-1].y-20, fontSize:16, fill:'#8607f7', selectable:false
+            text = new fabric.Text(`Longitud: ${Math.round(length)} mm`,{
+                left:points[points.length-1].x, top:points[points.length-1].y-20, fontSize:16, fill:measurementColor, selectable:false
             });
             canvas.add(text);
         }
@@ -220,12 +222,13 @@ function calculateContourLength(points){
     return length*scaleFactor;
 }
 
+// === ARCO ===
 function activateArcTool(){
     let points=[];
     canvas.on('mouse:down', function(opt){
         const p = canvas.getPointer(opt.e);
         points.push(p);
-        canvas.add(new fabric.Circle({ left:p.x-4, top:p.y-4, radius:4, fill:'blue', selectable:false }));
+        canvas.add(new fabric.Circle({ left:p.x-4, top:p.y-4, radius:4, fill:measurementColor, selectable:false }));
         if(points.length===3){
             drawArc(points[0],points[1],points[2]);
             points=[];
@@ -237,12 +240,12 @@ function drawArc(p1,p2,center){
     const r = Math.hypot(center.x-p1.x, center.y-p1.y);
     const a1 = Math.atan2(p1.y-center.y, p1.x-center.x);
     const a2 = Math.atan2(p2.y-center.y, p2.x-center.x);
-    const path = new fabric.Path(`M ${p1.x} ${p1.y} A ${r} ${r} 0 0 1 ${p2.x} ${p2.y}`,{ stroke:'blue', strokeWidth:2, fill:'', selectable:false });
+    const path = new fabric.Path(`M ${p1.x} ${p1.y} A ${r} ${r} 0 0 1 ${p2.x} ${p2.y}`,{ stroke:measurementColor, strokeWidth:2, fill:'', selectable:false });
     canvas.add(path);
     const angle = Math.abs((a2-a1)*(180/Math.PI));
     const arcLength = r*(angle*Math.PI/180)*scaleFactor;
-    const text = new fabric.Text(`Longitud: ${arcLength.toFixed(2)} mm`,{
-        left:(p1.x+p2.x)/2, top:(p1.y+p2.y)/2-30, fontSize:16, fill:'blue', selectable:false
+    const text = new fabric.Text(`Longitud: ${Math.round(arcLength)} mm`,{
+        left:(p1.x+p2.x)/2, top:(p1.y+p2.y)/2-30, fontSize:16, fill:measurementColor, selectable:false
     });
     canvas.add(text);
 }
