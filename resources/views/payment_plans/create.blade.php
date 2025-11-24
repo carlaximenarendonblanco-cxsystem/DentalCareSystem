@@ -152,7 +152,7 @@
                     class="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm bg-white" required>
             </div>
             <div class="flex items-end">
-                <button type="button" class="botton2 removeInstallment w-full">
+                <button type="button" class="bottonDelete">
                     {{ __('Eliminar') }}
                 </button>
             </div>
