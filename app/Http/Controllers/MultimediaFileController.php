@@ -278,6 +278,6 @@ class MultimediaFileController extends Controller
             }
         }
 
-        return view('multimedia.measure', compact('study', 'imageUrls'));
+        return view('multimedia.tool', compact('study', 'imageUrls'));
     }
 }

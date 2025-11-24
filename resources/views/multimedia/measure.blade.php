@@ -19,20 +19,7 @@
     </select>
 </div>
 
-<div class="flex justify-end mb-4">
-    <label for="scaleSelect" class="mr-2 font-semibold text-gray-800">Escala:</label>
-    <select id="scaleSelect" class="border border-gray-300 rounded-lg p-2">
-        <option value="1">1:1</option>
-        <option value="0.5">1:2</option>
-        <option value="0.33333">1:3</option>
-        <option value="0.25">1:4</option>
-        <option value="0.2">1:5</option>
-        <option value="2">2:1</option>
-        <option value="3">3:1</option>
-        <option value="4">4:1</option>
-        <option value="5">5:1</option>
-    </select>
-</div>
+
 
 <div class="relative flex justify-center space-x-2 mb-6">
     @php
@@ -54,7 +41,20 @@
     </div>
     @endforeach
 </div>
-
+<div class="flex justify-end p-5 pt-1">
+    <label for="scaleSelect" class="mr-2 font-semibold text-gray-800">Escala:</label>
+    <select id="scaleSelect" class="border border-gray-300 rounded-lg p-2">
+        <option value="1">1:1</option>
+        <option value="0.5">1:2</option>
+        <option value="0.33333">1:3</option>
+        <option value="0.25">1:4</option>
+        <option value="0.2">1:5</option>
+        <option value="2">2:1</option>
+        <option value="3">3:1</option>
+        <option value="4">4:1</option>
+        <option value="5">5:1</option>
+    </select>
+</div>
 <div class="flex justify-center mt-4 mb-2">
     <canvas id="measureCanvas" class="border rounded-lg"></canvas>
 </div>
@@ -120,7 +120,7 @@ imageSelect.addEventListener('change', (e) => loadImage(e.target.value));
 // === CAMBIO DE ESCALA ===
 scaleSelect.addEventListener('change', (e) => {
     scaleFactor = parseFloat(e.target.value);
-    scaleMessage.textContent = `Escala seleccionada 1:${Math.round(1/scaleFactor)}`;
+    // scaleMessage.textContent = `Escala seleccionada 1:${Math.round(1/scaleFactor)}`;
 });
 
 // === ACTIVAR HERRAMIENTAS ===
