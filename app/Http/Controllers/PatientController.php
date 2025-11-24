@@ -39,10 +39,29 @@ class PatientController extends Controller
             ->with('success', 'Paciente creado correctamente');
     }
 
-    public function show(Patient $patient): View
+    public function show(Patient $patient)
     {
+        $user = Auth::user();
+
+        if ($user->role !== 'superadmin' && $patient->clinic_id !== $user->clinic_id) {
+            abort(403, 'No autorizado');
+        }
+        $patient->load([
+            'treatments' => function ($q) use ($user) {
+                if ($user->role !== 'superadmin') {
+                    $q->where('clinic_id', $user->clinic_id);
+                }
+            },
+            'events' => function ($q) use ($user) {
+                if ($user->role !== 'superadmin') {
+                    $q->where('clinic_id', $user->clinic_id);
+                }
+            }
+        ]);
+
         return view('patient.show', compact('patient'));
     }
+
 
     public function edit(Patient $patient): View
     {
@@ -70,9 +89,9 @@ class PatientController extends Controller
         $user = Auth::user();
         $search = $request->input('search');
         $query = Patient::query();
-        $query->where(function($q) use ($search) {
+        $query->where(function ($q) use ($search) {
             $q->where('name_patient', 'LIKE', "%{$search}%")
-              ->orWhere('ci_patient', 'LIKE', "%{$search}%");
+                ->orWhere('ci_patient', 'LIKE', "%{$search}%");
         });
         if ($user->role !== 'superadmin') {
             $query->where('clinic_id', $user->clinic_id);

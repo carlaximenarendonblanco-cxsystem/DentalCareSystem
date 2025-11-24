@@ -70,4 +70,4 @@
         </div>
     </form>
 </div>
-@endsectionM
+@endsection
