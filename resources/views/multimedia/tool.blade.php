@@ -28,14 +28,11 @@
         $filters = [
             ['id'=>'zoomIn','img'=>'zoom.png','title'=>'Acercar'],
             ['id'=>'zoomOut','img'=>'unzoom.png','title'=>'Alejar'],
-            ['id'=>'magnifier','img'=>'lupa.png','title'=>'Lupa'],
             ['id'=>'invertColors','img'=>'negative.png','title'=>'Negativo'],
             ['id'=>'increaseBrightness','img'=>'filter3.png','title'=>'Más Brillo'],
             ['id'=>'decreaseBrightness','img'=>'filter4.png','title'=>'Menos Brillo'],
             ['id'=>'increaseContrast','img'=>'filter1.png','title'=>'Más Contraste'],
             ['id'=>'decreaseContrast','img'=>'filter2.png','title'=>'Menos Contraste'],
-            ['id'=>'edgesButton','img'=>'edge.png','title'=>'Bordes'],
-            ['id'=>'save','img'=>'save.png','title'=>'Guardar'],
             ['id'=>'downloadImage','img'=>'download.png','title'=>'Descargar'],
         ];
     @endphp
