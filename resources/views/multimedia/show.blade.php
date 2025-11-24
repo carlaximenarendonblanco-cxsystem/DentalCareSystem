@@ -87,6 +87,7 @@
         @endforelse
     </div>
     <div class="flex justify-center mt-8">
+        <a href="{{ route('multimedia.tool', $study->id) }}" class="botton2">Aplicar filtros</a>
         <a href="{{ route('multimedia.measure', $study->id) }}" class="botton3">Mediciones</a>
     </div>
     {{-- Botón eliminar --}}

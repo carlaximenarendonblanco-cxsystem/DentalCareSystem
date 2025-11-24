@@ -60,14 +60,15 @@
     @endforeach
 </div>
 
-{{-- Imagen principal --}}
-<div class="relative flex justify-center mt-4 mb-4">
-    <img id="studyImage" src="{{ $imageUrls[0] ?? '' }}" class="border rounded-lg" style="max-width:1100px; max-height:800px;">
+{{-- Contenedor scrollable para la imagen --}}
+<div class="relative flex justify-center mt-4 mb-4 border rounded-lg overflow-auto" style="max-width:1100px; max-height:800px;">
+    <img id="studyImage" src="{{ $imageUrls[0] ?? '' }}" style="cursor: grab; user-select: none; transform: scale(1);">
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const img = document.getElementById('studyImage');
+    const container = img.parentElement;
     const imageSelect = document.getElementById('imageSelect');
 
     let zoom = 1;
@@ -76,35 +77,42 @@ document.addEventListener('DOMContentLoaded', () => {
     let isNegative = false;
     let edgesApplied = false;
 
+    let isDragging = false;
+    let startX, startY;
+    let scrollLeft, scrollTop;
+
     function updateFilters() {
         let filterStr = `brightness(${1 + brightness}) contrast(${contrast})`;
         if(isNegative) filterStr += ' invert(1)';
         img.style.filter = filterStr;
     }
 
+    // Cambio de imagen
     imageSelect.addEventListener('change', (e) => {
         img.src = e.target.value;
         zoom = 1; brightness = 0; contrast = 1; isNegative = false; edgesApplied = false;
-        img.style.transform = `scale(1)`;
+        img.style.transform = `scale(${zoom})`;
         updateFilters();
     });
 
+    // Zoom
     document.getElementById('zoomIn').addEventListener('click', () => {
-        zoom += 0.1;
+        zoom = Math.min(3, zoom + 0.1);
         img.style.transform = `scale(${zoom})`;
     });
     document.getElementById('zoomOut').addEventListener('click', () => {
-        zoom = Math.max(0.1, zoom - 0.1);
+        zoom = Math.max(0.2, zoom - 0.1);
         img.style.transform = `scale(${zoom})`;
     });
 
+    // Filtros
     document.getElementById('increaseBrightness').addEventListener('click', () => { brightness = Math.min(brightness + 0.1, 1); updateFilters(); });
     document.getElementById('decreaseBrightness').addEventListener('click', () => { brightness = Math.max(brightness - 0.1, -1); updateFilters(); });
     document.getElementById('increaseContrast').addEventListener('click', () => { contrast = Math.min(contrast + 0.1, 3); updateFilters(); });
     document.getElementById('decreaseContrast').addEventListener('click', () => { contrast = Math.max(contrast - 0.1, 0); updateFilters(); });
     document.getElementById('invertColors').addEventListener('click', () => { isNegative = !isNegative; updateFilters(); });
 
-    // Borde (sobel simplificado usando canvas)
+    // Bordes (simplificado)
     document.getElementById('edgesButton').addEventListener('click', () => {
         if(edgesApplied){
             img.src = imageSelect.value;
@@ -112,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
             updateFilters();
             return;
         }
-
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const tempImg = new Image();
@@ -134,12 +141,51 @@ document.addEventListener('DOMContentLoaded', () => {
         tempImg.src = img.src;
     });
 
-    // Descargar
+    // Descargar con filtros aplicados
     document.getElementById('downloadImage').addEventListener('click', () => {
-        const link = document.createElement('a');
-        link.download = 'imagen_filtrada.png';
-        link.href = img.src;
-        link.click();
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const tempImg = new Image();
+        tempImg.crossOrigin = "anonymous";
+        tempImg.onload = () => {
+            canvas.width = tempImg.width;
+            canvas.height = tempImg.height;
+            ctx.filter = img.style.filter; // Aplica todos los filtros
+            ctx.drawImage(tempImg,0,0);
+            const link = document.createElement('a');
+            link.download = 'imagen_filtrada.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        tempImg.src = img.src;
+    });
+
+    // Mover imagen cuando hay zoom
+    img.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.pageX - container.offsetLeft;
+        startY = e.pageY - container.offsetTop;
+        scrollLeft = container.scrollLeft;
+        scrollTop = container.scrollTop;
+        img.style.cursor = 'grabbing';
+    });
+    img.addEventListener('mouseup', () => {
+        isDragging = false;
+        img.style.cursor = 'grab';
+    });
+    img.addEventListener('mouseleave', () => {
+        isDragging = false;
+        img.style.cursor = 'grab';
+    });
+    img.addEventListener('mousemove', (e) => {
+        if(!isDragging) return;
+        e.preventDefault();
+        const x = e.pageX - container.offsetLeft;
+        const y = e.pageY - container.offsetTop;
+        const walkX = (x - startX) * -1;
+        const walkY = (y - startY) * -1;
+        container.scrollLeft = scrollLeft + walkX;
+        container.scrollTop = scrollTop + walkY;
     });
 });
 </script>
