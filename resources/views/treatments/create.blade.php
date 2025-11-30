@@ -17,7 +17,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
                 <label class="title4 block mb-2">{{ __('Nombre del paciente') }}:</label>
-                <input type="text" name="name"  value="{{ old('name', $patient->name_patient ?? '') }}"
+                <input type="text" name="name" value="{{ old('name', $patient->name_patient ?? '') }}"
                     class="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:border-cyan-500 focus:ring focus:ring-cyan-300 focus:ring-opacity-50 transition duration-200 ease-in-out text-gray-700 bg-white" />
                 @error('name') <p class="error mt-1">{{ $message }}</p> @enderror
             </div>
@@ -79,7 +79,7 @@
         <div>
             <label class="title4 block mb-2">{{ __('Detalles') }}:</label>
             <textarea name="details" value="{{ old('details') }}" class="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:border-cyan-500 focus:ring focus:ring-cyan-300 focus:ring-opacity-50 transition duration-200 ease-in-out text-gray-700 bg-white" rows="2"></textarea>
-                @error('details') <p class="error mt-1">{{ $message }}</p> @enderror
+            @error('details') <p class="error mt-1">{{ $message }}</p> @enderror
         </div>
         <div class="flex justify-center gap-4 mt-6">
             <button type="submit" class="botton2">{{ __('Crear Presupuesto') }}</button>
@@ -187,39 +187,42 @@
         }
     });
     document.getElementById('treatmentForm').addEventListener('submit', function(e) {
-        e.preventDefault(); // evita que recargue la página directamente
+        e.preventDefault(); // evita que recargue la página
 
         const form = this;
         const formData = new FormData(form);
 
-        // Envía la solicitud normalmente
         fetch(form.action, {
                 method: 'POST',
                 body: formData,
             })
             .then(response => {
-                if (response.ok) {
-                    // Convierte la respuesta a un blob (archivo)
-                    return response.blob();
-                } else {
-                    throw new Error('Error al generar el archivo.');
+                if (!response.ok) throw new Error('Error al generar el archivo.');
+                const disposition = response.headers.get('Content-Disposition');
+                let fileName = 'treatment.pdf';
+                if (disposition && disposition.indexOf('filename=') !== -1) {
+                    fileName = disposition.split('filename=')[1].replace(/"/g, '');
                 }
+                return response.blob().then(blob => ({
+                    blob,
+                    fileName
+                }));
             })
-            .then(blob => {
-                // Crea un enlace temporal para descargar el archivo
+            .then(({
+                blob,
+                fileName
+            }) => {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-
-                // Opcional: define el nombre del archivo
-                a.download = 'treatment.pdf';
+                a.download = fileName; // nombre real
                 document.body.appendChild(a);
                 a.click();
 
-                // Espera un poco y redirige al index
+                // redirigir al index después de 1s
                 setTimeout(() => {
                     window.location.href = "{{ route('treatments.index') }}";
-                }, 2000);
+                }, 1000);
             })
             .catch(error => {
                 console.error(error);
