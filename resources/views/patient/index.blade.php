@@ -1,7 +1,7 @@
 @extends('layouts._partials.layout')
 @section('title','Pacientes')
 @section('subtitle')
-    {{ __('Pacientes') }}
+{{ __('Pacientes') }}
 @endsection
 
 @section('content')
@@ -39,25 +39,28 @@
         <div><a href="{{ route('patient.show', $patient->id) }}" class="hover:text-cyan-600">{{ $patient->name_patient }}</a></div>
         <div><a href="{{ route('patient.show', $patient->id) }}" class="hover:text-cyan-600">{{ $patient->birth_date }}</a></div>
         <div><a href="{{ route('patient.show', $patient->id) }}" class="hover:text-cyan-600">{{ $patient->patient_contact }}</a></div>
-        {{-- BOTÓN WHATSAPP --}}
-        @if($patient->patient_contact)
-        <a href="https://wa.me/{{ $patient->patient_contact }}" target="_blank" class="inline-flex items-center px-3 py-1 rounded-full bg-green-500 text-white hover:bg-green-600 transition">
-            <img src="{{ asset('assets/images/whatsapp.png') }}" alt="WhatsApp" class="h-5 w-5 mr-2">
-            WhatsApp
-        </a>
-        @endif
-        <a href="{{ route('treatment.newcreate', $patient->id) }}" class="botton2">{{ __('Presupuesto') }}</a>
+        <div class="flex justify-center gap-2">
+            {{-- BOTÓN WHATSAPP --}}
+            @if($patient->patient_contact)
+            <a href="https://wa.me/{{ $patient->patient_contact }}" target="_blank" class="inline-flex items-center px-3 py-1 rounded-full bg-green-500 text-white hover:bg-green-600 transition">
+                <img src="{{ asset('assets/images/whatsapp.png') }}" alt="WhatsApp" class="h-3 w-3 mr-2">WhatsApp
+            </a>
+            @endif
+        </div>
+        <div class="flex justify-center gap-2">
+            <a href="{{ route('treatment.newcreate', $patient->id) }}" class="botton2">{{ __('Presupuesto') }}</a>
+        </div>
         <div class="flex justify-center gap-2">
             <a href="{{ route('patient.edit', $patient->id) }}" class="botton3">{{ __('Editar') }}</a>
             @auth
-                @if(Auth::user()->role === 'admin')  
-                <form method="POST" action="{{ route('patient.destroy', $patient->id) }}" 
-                      onsubmit="return confirm('{{ __('¿Estás seguro de que quieres eliminar este paciente?') }}');">
-                    @csrf
-                    @method('DELETE')
-                    <input type="submit" value="{{ __('Eliminar') }}" class="bottonDelete cursor-pointer"/>
-                </form>
-                @endif
+            @if(Auth::user()->role === 'admin')
+            <form method="POST" action="{{ route('patient.destroy', $patient->id) }}"
+                onsubmit="return confirm('{{ __('¿Estás seguro de que quieres eliminar este paciente?') }}');">
+                @csrf
+                @method('DELETE')
+                <input type="submit" value="{{ __('Eliminar') }}" class="bottonDelete cursor-pointer" />
+            </form>
+            @endif
             @endauth
         </div>
     </div>
@@ -83,14 +86,14 @@
         <div class="flex gap-2 mt-2">
             <a href="{{ route('patient.edit', $patient->id) }}" class="botton3 flex-1 text-center">{{ __('Editar') }}</a>
             @auth
-                @if(Auth::user()->role === 'admin')  
-                <form method="POST" action="{{ route('patient.destroy', $patient->id) }}" 
-                      onsubmit="return confirm('{{ __('¿Estás seguro de que quieres eliminar este paciente?') }}');" class="flex-1">
-                    @csrf
-                    @method('DELETE')
-                    <input type="submit" value="{{ __('Eliminar') }}" class="bottonDelete w-full cursor-pointer"/>
-                </form>
-                @endif
+            @if(Auth::user()->role === 'admin')
+            <form method="POST" action="{{ route('patient.destroy', $patient->id) }}"
+                onsubmit="return confirm('{{ __('¿Estás seguro de que quieres eliminar este paciente?') }}');" class="flex-1">
+                @csrf
+                @method('DELETE')
+                <input type="submit" value="{{ __('Eliminar') }}" class="bottonDelete w-full cursor-pointer" />
+            </form>
+            @endif
             @endauth
         </div>
     </div>

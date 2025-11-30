@@ -33,10 +33,10 @@ class EventController extends Controller
 
         // Filtrar doctores y pacientes por clínica
         if ($user->role === 'superadmin') {
-            $doctors = User::where('role', 'doctor')->get();
+            $doctors = User::where('role', ['doctor', 'admin'])->get();
             $patients = Patient::all();
         } else {
-            $doctors = User::where('role', 'doctor')
+            $doctors = User::where('role', ['doctor', 'admin'])
                 ->where('clinic_id', $user->clinic_id)
                 ->get();
 
