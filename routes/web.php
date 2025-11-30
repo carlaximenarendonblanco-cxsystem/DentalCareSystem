@@ -86,13 +86,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::post('/budget-search', [BudgetController::class, 'search'])->name('budgets.search');
     Route::post('/treatment-search', [TreatmentController::class, 'search'])->name('treatments.search');
     Route::post('/treatment-download/{id}', [TreatmentController::class, 'downloadPdf'])->name('treatments.downloadPdf');
-
+    Route::get('/treatment/newcreate/{patient}', [TreatmentController::class, 'newCreate'])->name('treatment.newcreate');
     Route::prefix('treatments/{treatment}/payments')->group(function () {
         Route::get('/', [PaymentController::class, 'show'])->name('payments.show');
         Route::get('/create', [PaymentController::class, 'create'])->name('payments.create');
         Route::post('/store', [PaymentController::class, 'store'])->name('payments.store');
         Route::delete('/{id}', [PaymentController::class, 'destroy'])->name('payments.destroy');
-        Route::get('/treatment/newcreate/{patient}', [TreatmentController::class, 'newCreate'])->name('treatment.newcreate');
     });
     Route::post('/payments/search', [PaymentController::class, 'search'])->name('payments.search');
     Route::get('/payments/index', [PaymentController::class, 'index'])->name('payments.index');
