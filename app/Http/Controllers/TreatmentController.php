@@ -113,8 +113,10 @@ class TreatmentController extends Controller
             'clinic'    => $clinic,
         ])->setPaper('letter', 'portrait');
 
+        $patientName = $treatment->name ?? 'Paciente';
+        $patientName = preg_replace('/[^A-Za-z0-9_-]/', '_', $patientName);
         $patientName = preg_replace('/[^A-Za-z0-9 áéíóúÁÉÍÓÚñÑ]/', '', $treatment->name ?? 'Paciente');
-        $fileName = 'Presupuesto ' . trim($patientName) . '.pdf';
+        $fileName = 'Presupuesto_' . $patientName . '.pdf';
         $storagePath = 'treatments/' . $fileName;
 
         Storage::put($storagePath, $pdf->output());

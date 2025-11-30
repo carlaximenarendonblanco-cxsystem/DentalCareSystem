@@ -46,7 +46,7 @@
             WhatsApp
         </a>
         @endif
-        <a href="{{ route('treatment.newcreate', $patient->id) }}" class="botton2">{{ __('Crear presupuesto') }}</a>
+        <a href="{{ route('treatment.newcreate', $patient->id) }}" class="botton2">{{ __('Presupuesto') }}</a>
         <div class="flex justify-center gap-2">
             <a href="{{ route('patient.edit', $patient->id) }}" class="botton3">{{ __('Editar') }}</a>
             @auth
