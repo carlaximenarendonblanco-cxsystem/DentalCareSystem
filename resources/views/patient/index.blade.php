@@ -23,20 +23,30 @@
 
 <!-- Desktop Table -->
 <div class="hidden sm:block max-w-6xl mx-auto bg-white rounded-xl p-3 text-gray-900 shadow-md">
-    <div class="grid grid-cols-5 gap-4 border-b border-gray-300 pb-2 mb-3 text-center font-semibold">
+    <div class="grid grid-cols-7 gap-4 border-b border-gray-300 pb-2 mb-3 text-center font-semibold">
         <div class="title4">{{ __('Carnet de Identidad') }}</div>
         <div class="title4">{{ __('Nombre') }}</div>
         <div class="title4">{{ __('Fecha de nacimiento') }}</div>
         <div class="title4">{{ __('Celular') }}</div>
+        <div class="title4">{{ __('Contactar') }}</div>
+        <div class="title4">{{ __('Presupuesto') }}</div>
         <div class="title4">{{ __('Acciones') }}</div>
     </div>
 
     @forelse($patients as $patient)
-    <div class="grid grid-cols-5 gap-4 items-center border-b border-gray-200 py-3 text-gray-800 hover:bg-gray-50 transition text-center">
+    <div class="grid grid-cols-7 gap-4 items-center border-b border-gray-200 py-3 text-gray-800 hover:bg-gray-50 transition text-center">
         <div><a href="{{ route('patient.show', $patient->id) }}" class="hover:text-cyan-600">{{ $patient->ci_patient }}</a></div>
         <div><a href="{{ route('patient.show', $patient->id) }}" class="hover:text-cyan-600">{{ $patient->name_patient }}</a></div>
         <div><a href="{{ route('patient.show', $patient->id) }}" class="hover:text-cyan-600">{{ $patient->birth_date }}</a></div>
         <div><a href="{{ route('patient.show', $patient->id) }}" class="hover:text-cyan-600">{{ $patient->patient_contact }}</a></div>
+        {{-- BOTÓN WHATSAPP --}}
+        @if($paciente->patient_contact)
+        <a href="https://wa.me/{{ $paciente->patient_contact }}" target="_blank" class="inline-flex items-center px-3 py-1 rounded-full bg-green-500 text-white hover:bg-green-600 transition">
+            <img src="{{ asset('assets/images/whatsapp.png') }}" alt="WhatsApp" class="h-5 w-5 mr-2">
+            WhatsApp
+        </a>
+        @endif
+        <a href="{{ route('treatment.newcreate', $patient->id) }}" class="botton2">{{ __('Crear presupuesto') }}</a>
         <div class="flex justify-center gap-2">
             <a href="{{ route('patient.edit', $patient->id) }}" class="botton3">{{ __('Editar') }}</a>
             @auth

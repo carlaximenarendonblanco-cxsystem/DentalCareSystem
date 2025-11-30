@@ -92,6 +92,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/create', [PaymentController::class, 'create'])->name('payments.create');
         Route::post('/store', [PaymentController::class, 'store'])->name('payments.store');
         Route::delete('/{id}', [PaymentController::class, 'destroy'])->name('payments.destroy');
+        Route::get('/treatment/newcreate/{patient}', [TreatmentController::class, 'newCreate'])->name('treatment.newcreate');
     });
     Route::post('/payments/search', [PaymentController::class, 'search'])->name('payments.search');
     Route::get('/payments/index', [PaymentController::class, 'index'])->name('payments.index');

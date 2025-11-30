@@ -17,13 +17,13 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
                 <label class="title4 block mb-2">{{ __('Nombre del paciente') }}:</label>
-                <input type="text" name="name" value="{{ old('name') }}"
+                <input type="text" name="name"  value="{{ old('name', $patient->name_patient ?? '') }}"
                     class="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:border-cyan-500 focus:ring focus:ring-cyan-300 focus:ring-opacity-50 transition duration-200 ease-in-out text-gray-700 bg-white" />
                 @error('name') <p class="error mt-1">{{ $message }}</p> @enderror
             </div>
             <div>
                 <label class="title4 block mb-2">{{ __('C.I.') }}:</label>
-                <input type="text" name="ci_patient" value="{{ old('ci_patient') }}"
+                <input type="text" name="ci_patient" value="{{ old('ci_patient', $patient->ci_patient ?? '') }}"
                     class="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:border-cyan-500 focus:ring focus:ring-cyan-300 focus:ring-opacity-50 transition duration-200 ease-in-out text-gray-700 bg-white" />
                 @error('ci_patient') <p class="error mt-1">{{ $message }}</p> @enderror
             </div>

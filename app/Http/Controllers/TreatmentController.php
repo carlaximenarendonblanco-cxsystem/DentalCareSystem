@@ -41,7 +41,7 @@ class TreatmentController extends Controller
     {
         $request->validate([
             'name'              => 'nullable|string|max:255',
-            'ci_patient'        => 'required|numeric',
+            'ci_patient'        => 'nullable|numeric',
             'selected_budgets'  => 'required|array',
             'quantity'          => 'nullable|array',
             'discount'          => 'nullable|numeric|min:0',
@@ -65,8 +65,8 @@ class TreatmentController extends Controller
         foreach ($selectedBudgets as $id) {
 
             $budget = Budget::when($user->role !== 'superadmin', function ($q) use ($user) {
-                    $q->where('clinic_id', $user->clinic_id);
-                })
+                $q->where('clinic_id', $user->clinic_id);
+            })
                 ->where('id', $id)
                 ->first();
 
@@ -97,8 +97,8 @@ class TreatmentController extends Controller
             'amount'       => $finalAmount,
             'details'      => $request->details,
             'clinic_id'    => $user->clinic_id,
-            'created_by'   => Auth::id(), // <<<<<< AGREGADO
-            'edit_by'      => Auth::id(), // <<<<<< AGREGADO
+            'created_by'   => Auth::id(),
+            'edit_by'      => Auth::id(),
             'pdf_path'     => null,
         ]);
 
@@ -112,7 +112,8 @@ class TreatmentController extends Controller
             'clinic'    => $clinic,
         ])->setPaper('letter', 'portrait');
 
-        $fileName = 'Cotizacion' . $treatment->name . $treatment->id . '.pdf';
+        $patientName = preg_replace('/[^A-Za-z0-9 áéíóúÁÉÍÓÚñÑ]/', '', $treatment->name ?? 'Paciente');
+        $fileName = 'Presupuesto ' . trim($patientName) . '.pdf';
         $storagePath = 'treatments/' . $fileName;
 
         Storage::put($storagePath, $pdf->output());
@@ -165,14 +166,23 @@ class TreatmentController extends Controller
         $user = Auth::user();
 
         $treatments = Treatment::where(function ($query) use ($search) {
-                $query->where('name', 'LIKE', "%$search%")
-                    ->orWhere('ci_patient', 'LIKE', "%$search%");
-            })
+            $query->where('name', 'LIKE', "%$search%")
+                ->orWhere('ci_patient', 'LIKE', "%$search%");
+        })
             ->when($user->role !== 'superadmin', function ($q) use ($user) {
                 $q->where('clinic_id', $user->clinic_id);
             })
             ->get();
 
         return view('treatments.search', compact('treatments'));
+    }
+    public function newCreate(Patient $patient)
+    {
+        $budgets = Budget::all();
+
+        return view('treatments.create', [
+            'patient' => $patient,
+            'budgets' => $budgets
+        ]);
     }
 }
