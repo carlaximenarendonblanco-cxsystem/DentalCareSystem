@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Treatment;
 use App\Models\Budget;
+use App\Models\Patient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
