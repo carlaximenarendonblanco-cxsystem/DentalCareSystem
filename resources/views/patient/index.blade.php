@@ -40,8 +40,8 @@
         <div><a href="{{ route('patient.show', $patient->id) }}" class="hover:text-cyan-600">{{ $patient->birth_date }}</a></div>
         <div><a href="{{ route('patient.show', $patient->id) }}" class="hover:text-cyan-600">{{ $patient->patient_contact }}</a></div>
         {{-- BOTÓN WHATSAPP --}}
-        @if($paciente->patient_contact)
-        <a href="https://wa.me/{{ $paciente->patient_contact }}" target="_blank" class="inline-flex items-center px-3 py-1 rounded-full bg-green-500 text-white hover:bg-green-600 transition">
+        @if($patient->patient_contact)
+        <a href="https://wa.me/{{ $patient->patient_contact }}" target="_blank" class="inline-flex items-center px-3 py-1 rounded-full bg-green-500 text-white hover:bg-green-600 transition">
             <img src="{{ asset('assets/images/whatsapp.png') }}" alt="WhatsApp" class="h-5 w-5 mr-2">
             WhatsApp
         </a>
