@@ -31,12 +31,11 @@ class EventController extends Controller
         $user = Auth::user();
         $clinic = $user->clinic;
 
-        // Filtrar doctores y pacientes por clínica
         if ($user->role === 'superadmin') {
-            $doctors = User::where('role', ['doctor', 'admin'])->get();
+            $doctors = User::whereIn('role', ['doctor', 'admin'])->get();
             $patients = Patient::all();
         } else {
-            $doctors = User::where('role', ['doctor', 'admin'])
+            $doctors = User::whereIn('role', ['doctor', 'admin'])
                 ->where('clinic_id', $user->clinic_id)
                 ->get();
 
@@ -45,6 +44,7 @@ class EventController extends Controller
 
         return view('events.create', compact('doctors', 'patients', 'clinic'));
     }
+
 
     public function store(Request $request)
     {
@@ -127,7 +127,7 @@ class EventController extends Controller
                 'creator_name' => $event->creator->name ?? 'Sin información',
             ];
         }
-        
+
         return view('events.index', compact('events'));
     }
 
@@ -223,4 +223,3 @@ class EventController extends Controller
         return redirect()->route('events.index')->with('danger', 'Cita eliminada.');
     }
 }
-
