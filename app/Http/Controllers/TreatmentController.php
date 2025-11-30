@@ -112,9 +112,10 @@ class TreatmentController extends Controller
             'author'    => $user->name,
             'clinic'    => $clinic,
         ])->setPaper('letter', 'portrait');
-
+        
         $patientName = $treatment->name ?? 'Paciente';
-        $patientName = preg_replace('/[^\w\s-]/u', '', $patientName); 
+        $patientName = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $patientName);
+        $patientName = preg_replace('/[^\w\s-]/u', '', $patientName);
         $patientName = preg_replace('/\s+/', '_', $patientName);
 
         $fileName = 'Presupuesto_' . $patientName . '.pdf';
