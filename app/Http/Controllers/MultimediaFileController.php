@@ -20,7 +20,7 @@ class MultimediaFileController extends Controller
      */
     private function getDriveService()
     {
-        $jsonPath = public_path('assets/google-drive/sixth-starlight-480520-h9-bd9751a4ceab.json');
+        $jsonPath = public_path('assets/google-drive/sixth-starlight-480520-h9-bd9751a4ceab');
 
         if (!File::exists($jsonPath)) {
             abort(500, "Archivo de credenciales de Google Drive no encontrado: {$jsonPath}");
