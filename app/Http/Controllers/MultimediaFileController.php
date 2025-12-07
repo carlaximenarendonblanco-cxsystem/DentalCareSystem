@@ -101,32 +101,17 @@ class MultimediaFileController extends Controller
     $studyDate = Carbon::now()->toDateString();
     $folderName = "{$studyCode}_{$studyDate}";
 
-    // Guardar localmente
-    $diskPath = "multimedia/{$folderName}";
-    $basePath = storage_path("app/public/{$diskPath}");
-    if (!File::exists($basePath)) {
-        File::makeDirectory($basePath, 0775, true);
-    }
+    // Servicio Drive
+    $driveService = $this->getDriveService();
+    $driveFolderId = 'TU_ID_DE_CARPETA_DRIVE'; // Cambia esto por tu carpeta
 
     $count = 0;
 
-    // Obtener servicio de Google Drive
-    $driveService = $this->getDriveService();
-
-    // ID de la carpeta en Drive donde se guardarán los archivos
-    $driveFolderId = '14TaS42svjlWVzQNwa-mdcyOtWRnqyDz6'; // reemplaza con tu carpeta
-
-    // Guardar imágenes sueltas
+    // Subir imágenes individuales
     if ($request->hasFile('images')) {
         foreach ($request->file('images') as $img) {
-            $filename = Str::uuid() . '.' . $img->getClientOriginalExtension();
-
-            // Guardar local
-            $img->move($basePath, $filename);
-
-            // Subir a Drive
             $fileMetadata = new DriveFile([
-                'name' => $filename,
+                'name' => Str::uuid() . '.' . $img->getClientOriginalExtension(),
                 'parents' => [$driveFolderId]
             ]);
             $content = file_get_contents($img->getRealPath());
@@ -135,29 +120,29 @@ class MultimediaFileController extends Controller
                 'mimeType' => $img->getMimeType(),
                 'uploadType' => 'multipart'
             ]);
-
             $count++;
         }
     }
 
-    // Guardar carpeta ZIP
+    // Subir ZIP descomprimido
     if ($request->hasFile('folder')) {
         $zip = new ZipArchive;
         $zipPath = $request->file('folder')->getRealPath();
 
         if ($zip->open($zipPath) === true) {
-            $zip->extractTo($basePath);
+            $tempDir = storage_path("app/temp/{$folderName}");
+            if (!File::exists($tempDir)) File::makeDirectory($tempDir, 0775, true);
+            $zip->extractTo($tempDir);
             $zip->close();
 
             $directoryIterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($basePath, \RecursiveDirectoryIterator::SKIP_DOTS),
+                new \RecursiveDirectoryIterator($tempDir, \RecursiveDirectoryIterator::SKIP_DOTS),
                 \RecursiveIteratorIterator::SELF_FIRST
             );
 
             $imagePattern = '/\.(png|jpg|jpeg)$/i';
             foreach ($directoryIterator as $file) {
                 if ($file->isFile() && preg_match($imagePattern, $file->getFilename())) {
-                    // Subir cada imagen a Drive
                     $fileMetadata = new DriveFile([
                         'name' => $file->getFilename(),
                         'parents' => [$driveFolderId]
@@ -171,6 +156,8 @@ class MultimediaFileController extends Controller
                     $count++;
                 }
             }
+
+            File::deleteDirectory($tempDir);
         }
     }
 
@@ -180,7 +167,7 @@ class MultimediaFileController extends Controller
         'study_code' => $studyCode,
         'study_date' => $studyDate,
         'study_type' => $request->study_type,
-        'study_uri' => $diskPath, // local path
+        'study_uri' => 'google-drive', // Solo indicamos que está en Drive
         'description' => $request->input('description'),
         'image_count' => $count,
         'clinic_id' => $clinicId,
@@ -188,7 +175,7 @@ class MultimediaFileController extends Controller
         'edit_by' => auth()->id(),
     ]);
 
-    return redirect()->route('multimedia.index')->with('success', 'Estudio cargado correctamente en Google Drive y localmente.');
+    return redirect()->route('multimedia.index')->with('success', 'Estudio cargado correctamente en Google Drive.');
 }
 
 
