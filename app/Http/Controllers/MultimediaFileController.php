@@ -21,10 +21,10 @@ class MultimediaFileController extends Controller
     private function getDriveService()
     {
         // 🚨 CAMBIO CLAVE AQUÍ: Usamos storage_path() y la ruta relativa dentro de storage/app/
-        $jsonPath = storage_path('app/google-drive/sixth-starlight-480520-h9-bd9751a4ceab.json');
+        $jsonPath = resource_path('credentials/sixth-starlight-480520-h9-bd9751a4ceab.json');
 
         if (!File::exists($jsonPath)) {
-            // Este error se registrará en los logs si el archivo no existe en Render
+            // ... (Tu logging y abort 500)
             \Log::error("Archivo de credenciales de Google Drive no encontrado: {$jsonPath}");
             abort(500, "Error de Configuración de Drive: Credenciales no encontradas.");
         }
