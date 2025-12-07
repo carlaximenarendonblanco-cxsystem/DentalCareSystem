@@ -87,16 +87,20 @@ class PatientController extends Controller
     public function search(Request $request): View
     {
         $user = Auth::user();
-        $search = $request->input('search');
+        $search = strtolower($request->input('search'));
         $query = Patient::query();
+
         $query->where(function ($q) use ($search) {
-            $q->where('name_patient', 'LIKE', "%{$search}%")
-                ->orWhere('ci_patient', 'LIKE', "%{$search}%");
+            $q->whereRaw('LOWER(name_patient) LIKE ?', ["%{$search}%"])
+                ->orWhereRaw('LOWER(ci_patient) LIKE ?', ["%{$search}%"]);
         });
+
         if ($user->role !== 'superadmin') {
             $query->where('clinic_id', $user->clinic_id);
         }
+
         $patients = $query->paginate(10);
-        return view('patient.index', compact('patients'));
+
+        return view('patient.search', compact('patients'));
     }
 }

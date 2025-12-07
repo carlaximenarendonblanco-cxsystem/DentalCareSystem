@@ -53,6 +53,24 @@
         <p class="txt"><strong>{{ __('Restante') }}:</strong> Bs. {{ number_format($remaining, 2) }}</p>
     </div>
 
+    @if(isset($procedures) && count($procedures) > 0)
+    <div class="bg-gray-100 rounded-lg p-4 mb-6 shadow-sm">
+        <h3 class="title2 text-center mb-3">{{ __('Procedimientos Realizados') }}</h3>
+
+        <ul class="list-disc pl-6 text-lg">
+            @foreach($procedures as $proc)
+            <li>
+                <strong>{{ $proc->procedure }}</strong>
+                <span class="text-gray-600"> - Bs. {{ number_format($proc->total_amount,2) }}</span>
+                <br>
+                <small class="text-gray-500">{{ $proc->description }}</small>
+            </li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
+
     <h2 class="title2 text-center py-5">{{ __('Historial de Pagos') }}</h2>
 
     @if($payments->isEmpty())

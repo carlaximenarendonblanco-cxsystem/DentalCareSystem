@@ -15,6 +15,10 @@ class Treatment extends Model
     use HasFactory;
 
     protected $guarded = [];
+    protected $casts = [
+        'budget_codes' => 'array',
+    ];
+
 
     public function payments()
     {

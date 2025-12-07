@@ -7,7 +7,7 @@
 @section('content')
 
 <div class="flex justify-end pt-5 pr-5">
-    <a href="{{ url()->previous() }}" class="botton1">{{ __('Volver') }}</a>
+    <a href="{{ route('treatments.index') }}" class="botton1">{{ __('Presupuestos') }}</a>
 </div>
 
 <!-- Contenedor principal -->
@@ -17,7 +17,6 @@
         <h1 class="title1 text-center pb-5">{{ __('Plan de Pagos del Tratamiento') }}</h1>
     </div>
 
-```
 <!-- Información general del tratamiento -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 pb-5">
     <div class="flex gap-2">
@@ -86,7 +85,6 @@
         </div>
     @endif
 </div>
-```
 
 </div>
 @endsection

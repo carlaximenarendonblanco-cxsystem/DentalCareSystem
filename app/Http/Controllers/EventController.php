@@ -149,6 +149,7 @@ class EventController extends Controller
         }
 
         $user = Auth::user();
+        $clinic = $user->clinic;
 
         if ($user->role === 'superadmin') {
             $doctors = User::where('role', 'doctor')->get();
@@ -159,15 +160,11 @@ class EventController extends Controller
                 ->where('clinic_id', $user->clinic_id)
                 ->get();
 
-            $radiologists = User::where('role', 'radiology')
-                ->where('clinic_id', $user->clinic_id)
-                ->get();
-
             $patients = Patient::where('clinic_id', $user->clinic_id)->get();
         }
-
-        return view('events.edit', compact('doctors', 'radiologists', 'patients', 'event'));
+        return view('events.edit', compact('doctors', 'patients', 'event', 'clinic'));
     }
+
 
     public function update(Request $request, Event $event)
     {
