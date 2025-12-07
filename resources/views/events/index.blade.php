@@ -1,4 +1,4 @@
-@include('layouts._partials.messages')
+@include('layouts._partials.messages') 
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -74,7 +74,6 @@
                 color: white;
             }
 
-
             .fc-event:hover {
                 cursor: pointer !important;
             }
@@ -120,6 +119,22 @@
                 font-weight: 600;
             }
 
+            /* Limitar texto de eventos */
+            .fc-event {
+                white-space: normal !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                font-size: 0.75rem;
+                line-height: 1.1;
+            }
+
+            .fc-event .fc-event-title {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: normal !important;
+                word-break: break-word;
+            }
+
             /* Eventos más compactos en móviles */
             @media (max-width: 640px) {
                 .fc .fc-daygrid-event {
@@ -160,8 +175,9 @@
                 const isMobile = window.innerWidth < 640;
 
                 const calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: isMobile ? 'listWeek' : 'dayGridMonth',
+                    initialView: isMobile ? 'listWeek' : 'timeGridWeek',
                     locale: 'es',
+                    slotEventOverlap: false, // ✅ Eventos lado a lado
                     buttonText: {
                         today: 'Hoy',
                         month: 'Mes',
@@ -182,24 +198,14 @@
                         hour12: false
                     },
                     eventClassNames: function(arg) {
-                        // Definir los colores de las salas (5 colores)
                         const colors = ['Sala-1', 'Sala-2', 'Sala-3', 'Sala-4', 'Sala-5'];
-
-                        // Extraer el número de consultorio
                         let roomNumber = 0;
                         const roomText = arg.event.extendedProps.room || '';
-                        const match = roomText.match(/\d+/); // Extrae el número del nombre "Consultorio X"
+                        const match = roomText.match(/\d+/);
                         if (match) roomNumber = parseInt(match[0], 10);
-
-                        if (roomNumber > 0) {
-                            // Asignar color cíclicamente: modulo 5
-                            const index = (roomNumber - 1) % colors.length;
-                            return [colors[index]];
-                        }
-
+                        if (roomNumber > 0) return [colors[(roomNumber - 1) % colors.length]];
                         return [];
                     },
-
                     eventContent: function(arg) {
                         if (arg.view.type !== 'dayGridMonth') {
                             const start = arg.event.start;
@@ -211,12 +217,11 @@
                                 hour12: false
                             }) : '';
                             return {
-                                html: `
-                <div style="font-size: 0.7rem; font-family: sans-serif; color: #000000ff;">
-                  <b>${arg.event.title}</b> 
-                  ${formatHour(start)} - ${formatHour(end)}<br>
-                  Doctor: ${doctor}
-                </div>`
+                                html: `<div style="font-size: 0.7rem; font-family: sans-serif; color: #000000ff; white-space: normal; overflow:hidden;">
+                                  <b>${arg.event.title}</b> 
+                                  ${formatHour(start)} - ${formatHour(end)}<br>
+                                  Doctor: ${doctor}
+                                </div>`
                             };
                         }
                     },
@@ -226,19 +231,16 @@
                             const end = info.event.end;
                             const room = info.event.extendedProps.room || '';
                             const doctor = info.event.extendedProps.doctor || '';
-                            const creator = info.event.extendedProps.creator_name || '';
                             const formatHour = (date) => date ? date.toLocaleTimeString([], {
                                 hour: '2-digit',
                                 minute: '2-digit',
                                 hour12: false
                             }) : '';
-
                             const mobile = window.innerWidth < 640;
-                            info.el.innerHTML = `
-                <div style="font-size:${mobile ? '0.6rem' : '0.75rem'}; line-height:1.1; font-family:sans-serif; color:#000;">
-                  <b>${info.event.title}</b>
-                  ${!mobile ? `<br>${room}<br>Horario: ${formatHour(start)}-${formatHour(end)}<br>Doctor: ${doctor}<br>` : ''}
-                </div>`;
+                            info.el.innerHTML = `<div style="font-size:${mobile ? '0.6rem' : '0.75rem'}; line-height:1.1; font-family:sans-serif; color:#000; white-space: normal; overflow:hidden;">
+                                <b>${info.event.title}</b>
+                                ${!mobile ? `<br>${room}<br>Horario: ${formatHour(start)}-${formatHour(end)}<br>Doctor: ${doctor}<br>` : ''}
+                            </div>`;
                         }
                     },
                     eventClick: function(info) {
@@ -253,7 +255,7 @@
                 window.addEventListener('resize', () => {
                     const newMobile = window.innerWidth < 640;
                     if (newMobile !== isMobile) {
-                        calendar.changeView(newMobile ? 'listWeek' : 'dayGridMonth');
+                        calendar.changeView(newMobile ? 'listWeek' : 'timeGridWeek');
                     }
                 });
             });
