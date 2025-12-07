@@ -83,84 +83,114 @@ class MultimediaFileController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'name_patient' => 'required|string',
-            'ci_patient' => 'required',
-            'study_type' => 'required|string',
-            'images.*' => 'nullable|mimes:png,jpg,jpeg|max:10240',
-            'folder' => 'nullable|file|mimetypes:application/zip,application/x-zip-compressed'
-        ]);
+{
+    $request->validate([
+        'name_patient' => 'required|string',
+        'ci_patient' => 'required',
+        'study_type' => 'required|string',
+        'images.*' => 'nullable|mimes:png,jpg,jpeg|max:10240',
+        'folder' => 'nullable|file|mimetypes:application/zip,application/x-zip-compressed'
+    ]);
 
-        $clinicId = auth()->user()->clinic_id ?? null;
-        if (!$clinicId) {
-            abort(403, 'No tienes una clínica asociada. No se puede crear el estudio.');
+    $clinicId = auth()->user()->clinic_id ?? null;
+    if (!$clinicId) {
+        abort(403, 'No tienes una clínica asociada. No se puede crear el estudio.');
+    }
+
+    $studyCode = strtoupper(Str::random(8));
+    $studyDate = Carbon::now()->toDateString();
+    $folderName = "{$studyCode}_{$studyDate}";
+
+    // Guardar localmente
+    $diskPath = "multimedia/{$folderName}";
+    $basePath = storage_path("app/public/{$diskPath}");
+    if (!File::exists($basePath)) {
+        File::makeDirectory($basePath, 0775, true);
+    }
+
+    $count = 0;
+
+    // Obtener servicio de Google Drive
+    $driveService = $this->getDriveService();
+
+    // ID de la carpeta en Drive donde se guardarán los archivos
+    $driveFolderId = '14TaS42svjlWVzQNwa-mdcyOtWRnqyDz6'; // reemplaza con tu carpeta
+
+    // Guardar imágenes sueltas
+    if ($request->hasFile('images')) {
+        foreach ($request->file('images') as $img) {
+            $filename = Str::uuid() . '.' . $img->getClientOriginalExtension();
+
+            // Guardar local
+            $img->move($basePath, $filename);
+
+            // Subir a Drive
+            $fileMetadata = new DriveFile([
+                'name' => $filename,
+                'parents' => [$driveFolderId]
+            ]);
+            $content = file_get_contents($img->getRealPath());
+            $driveService->files->create($fileMetadata, [
+                'data' => $content,
+                'mimeType' => $img->getMimeType(),
+                'uploadType' => 'multipart'
+            ]);
+
+            $count++;
         }
+    }
 
-        $studyCode = strtoupper(Str::random(8));
-        $studyDate = Carbon::now()->toDateString();
-        $folderName = "{$studyCode}_{$studyDate}";
-        $diskPath = "multimedia/{$folderName}";
-        $basePath = storage_path("app/public/{$diskPath}");
+    // Guardar carpeta ZIP
+    if ($request->hasFile('folder')) {
+        $zip = new ZipArchive;
+        $zipPath = $request->file('folder')->getRealPath();
 
-        if (!File::exists($basePath)) {
-            File::makeDirectory($basePath, 0775, true);
-        }
+        if ($zip->open($zipPath) === true) {
+            $zip->extractTo($basePath);
+            $zip->close();
 
-        $count = 0;
+            $directoryIterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($basePath, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::SELF_FIRST
+            );
 
-        // Guardar imágenes locales
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $img) {
-                $filename = Str::uuid() . '.' . $img->getClientOriginalExtension();
-                $img->move($basePath, $filename);
-                $count++;
-            }
-        }
-
-        // Guardar carpeta ZIP
-        if ($request->hasFile('folder')) {
-            $zip = new ZipArchive;
-            $zipPath = $request->file('folder')->getRealPath();
-
-            if ($zip->open($zipPath) === true) {
-                $zip->extractTo($basePath);
-                $zip->close();
-
-                $count = 0;
-                if (File::isDirectory($basePath)) {
-                    $directoryIterator = new \RecursiveIteratorIterator(
-                        new \RecursiveDirectoryIterator($basePath, \RecursiveDirectoryIterator::SKIP_DOTS),
-                        \RecursiveIteratorIterator::SELF_FIRST
-                    );
-                    $imagePattern = '/\.(png|jpg|jpeg)$/i';
-                    foreach ($directoryIterator as $file) {
-                        if ($file->isFile() && preg_match($imagePattern, $file->getFilename())) {
-                            $count++;
-                        }
-                    }
+            $imagePattern = '/\.(png|jpg|jpeg)$/i';
+            foreach ($directoryIterator as $file) {
+                if ($file->isFile() && preg_match($imagePattern, $file->getFilename())) {
+                    // Subir cada imagen a Drive
+                    $fileMetadata = new DriveFile([
+                        'name' => $file->getFilename(),
+                        'parents' => [$driveFolderId]
+                    ]);
+                    $content = file_get_contents($file->getPathname());
+                    $driveService->files->create($fileMetadata, [
+                        'data' => $content,
+                        'mimeType' => mime_content_type($file->getPathname()),
+                        'uploadType' => 'multipart'
+                    ]);
+                    $count++;
                 }
             }
         }
-
-        $relativePath = $diskPath;
-
-        MultimediaFile::create([
-            'name_patient' => $request->name_patient,
-            'ci_patient' => $request->ci_patient,
-            'study_code' => $studyCode,
-            'study_date' => $studyDate,
-            'study_type' => $request->study_type,
-            'study_uri' => $relativePath,
-            'description' => $request->input('description'),
-            'image_count' => $count,
-            'clinic_id' => $clinicId,
-            'created_by' => auth()->id(),
-            'edit_by' => auth()->id(),
-        ]);
-
-        return redirect()->route('multimedia.index')->with('success', 'Estudio cargado correctamente.');
     }
+
+    MultimediaFile::create([
+        'name_patient' => $request->name_patient,
+        'ci_patient' => $request->ci_patient,
+        'study_code' => $studyCode,
+        'study_date' => $studyDate,
+        'study_type' => $request->study_type,
+        'study_uri' => $diskPath, // local path
+        'description' => $request->input('description'),
+        'image_count' => $count,
+        'clinic_id' => $clinicId,
+        'created_by' => auth()->id(),
+        'edit_by' => auth()->id(),
+    ]);
+
+    return redirect()->route('multimedia.index')->with('success', 'Estudio cargado correctamente en Google Drive y localmente.');
+}
+
 
     public function show($id)
     {
