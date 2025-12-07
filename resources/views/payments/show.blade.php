@@ -20,8 +20,8 @@
         </div>
 
         @if(isset($procedures) && count($procedures) > 0)
-        <div class="bg-gray-100 rounded-lg p-4 mb-6 shadow-sm">
-            <h3 class="title2 text-center mb-3">{{ __('Procedimientos Realizados') }}</h3>
+        <div>
+            <h3 class="title4">{{ __('Procedimientos Realizados') }}</h3>
 
             <ul class="list-disc pl-6 text-lg">
                 @foreach($procedures as $proc)
