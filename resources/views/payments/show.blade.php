@@ -11,66 +11,60 @@
     @endif
 </div>
 
+<div class="max-w-5xl mx-auto bg-white rounded-xl p-4 text-gray-900">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 text-center sm:text-left">
+        <div class="mb-4 gap-4 text-center sm:text-left">
+            <p class="txt"><strong>{{ __('Total') }}:</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
+            <p class="txt"><strong>{{ __('Pagado') }}:</strong> Bs. {{ number_format($paid, 2) }}</p>
+            <p class="txt"><strong>{{ __('Restante') }}:</strong> Bs. {{ number_format($remaining, 2) }}</p>
+        </div>
 
-<div class="p-5 pb-1">
+        @if(isset($procedures) && count($procedures) > 0)
+        <div class="bg-gray-100 rounded-lg p-4 mb-6 shadow-sm">
+            <h3 class="title2 text-center mb-3">{{ __('Procedimientos Realizados') }}</h3>
 
-    @if($treatment->paymentPlan)
-
-    @php
-    $plan = $treatment->paymentPlan;
-    $installments = $plan->installments_relation ?? collect();
-    @endphp
-
-    <div class="bg-gray-100 p-4 rounded-lg shadow-sm p-5 pb-2">
-        <div class="title-4">DETALLES DEL PLAN DE PAGOS</div>
-        <p><strong>{{ __('Monto total del tratamiento:') }}</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
-        @if($plan->amount_per_installment)
-        <p><strong>{{ __('Monto por cuota:') }}</strong> Bs. {{ number_format($plan->amount_per_installment, 2) }}</p>
-        @else
-        <p><strong>{{ __('Los montos de las cuotas son personalizados') }}</strong></p>
+            <ul class="list-disc pl-6 text-lg">
+                @foreach($procedures as $proc)
+                <li>
+                    <small class="text-gray-500">{{ $proc->description }}</small>
+                </li>
+                @endforeach
+            </ul>
+        </div>
         @endif
-        <div class="flex justify-end pt-3">
-            <a href="{{ route('payment_plans.show', $treatment->id) }}" class="botton3">
-                {{ __('Ver Detalle Completo') }}
+    </div>
+    <div class="p-5 pb-1">
+
+        @if($treatment->paymentPlan)
+
+        @php
+        $plan = $treatment->paymentPlan;
+        $installments = $plan->installments_relation ?? collect();
+        @endphp
+
+        <div class="bg-gray-100 p-4 rounded-lg shadow-sm p-5 pb-2">
+            <div class="title-4">DETALLES DEL PLAN DE PAGOS</div>
+            <p><strong>{{ __('Monto total del tratamiento:') }}</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
+            @if($plan->amount_per_installment)
+            <p><strong>{{ __('Monto por cuota:') }}</strong> Bs. {{ number_format($plan->amount_per_installment, 2) }}</p>
+            @else
+            <p><strong>{{ __('Los montos de las cuotas son personalizados') }}</strong></p>
+            @endif
+            <div class="flex justify-end pt-3">
+                <a href="{{ route('payment_plans.show', $treatment->id) }}" class="botton3">
+                    {{ __('Ver Detalle Completo') }}
+                </a>
+            </div>
+        </div>
+        @else
+        <p class="mb-2 text-green-700 m-5">{{ __('El paciente no cuenta con plan de pagos') }}</p>
+        <div class="flex justify-end">
+            <a href="{{ route('payment_plans.create', $treatment->id) }}" class="botton3">
+                {{ __('Generar Plan de Pagos') }}
             </a>
         </div>
+        @endif
     </div>
-    @else
-    <p class="mb-2 text-green-700 m-5">{{ __('El paciente no cuenta con plan de pagos') }}</p>
-    <div class="flex justify-end">
-        <a href="{{ route('payment_plans.create', $treatment->id) }}" class="botton3">
-            {{ __('Generar Plan de Pagos') }}
-        </a>
-    </div>
-    @endif
-</div>
-
-<div class="max-w-5xl mx-auto bg-white rounded-xl p-4 text-gray-900">
-    <!-- Resumen del tratamiento -->
-    <div class="mb-4 gap-4 text-center sm:text-left">
-        <p class="txt"><strong>{{ __('Total') }}:</strong> Bs. {{ number_format($treatment->amount, 2) }}</p>
-        <p class="txt"><strong>{{ __('Pagado') }}:</strong> Bs. {{ number_format($paid, 2) }}</p>
-        <p class="txt"><strong>{{ __('Restante') }}:</strong> Bs. {{ number_format($remaining, 2) }}</p>
-    </div>
-
-    @if(isset($procedures) && count($procedures) > 0)
-    <div class="bg-gray-100 rounded-lg p-4 mb-6 shadow-sm">
-        <h3 class="title2 text-center mb-3">{{ __('Procedimientos Realizados') }}</h3>
-
-        <ul class="list-disc pl-6 text-lg">
-            @foreach($procedures as $proc)
-            <li>
-                <strong>{{ $proc->procedure }}</strong>
-                <span class="text-gray-600"> - Bs. {{ number_format($proc->total_amount,2) }}</span>
-                <br>
-                <small class="text-gray-500">{{ $proc->description }}</small>
-            </li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
-
-
     <h2 class="title2 text-center py-5">{{ __('Historial de Pagos') }}</h2>
 
     @if($payments->isEmpty())

@@ -152,11 +152,10 @@ class EventController extends Controller
         $clinic = $user->clinic;
 
         if ($user->role === 'superadmin') {
-            $doctors = User::where('role', 'doctor')->get();
-            $radiologists = User::where('role', 'radiology')->get();
+            $doctors = User::whereIn('role', ['doctor', 'admin'])->get();
             $patients = Patient::all();
         } else {
-            $doctors = User::where('role', 'doctor')
+            $doctors = User::whereIn('role', ['doctor', 'admin'])
                 ->where('clinic_id', $user->clinic_id)
                 ->get();
 

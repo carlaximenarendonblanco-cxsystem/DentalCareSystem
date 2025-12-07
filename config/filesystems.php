@@ -39,7 +39,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
         ],
@@ -71,6 +71,11 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
+    ],
+    'google' => [
+        'driver' => 'google',
+        'serviceAccountCredentialsJson' => storage_path('app/google-drive/sixth-starlight-480520-h9-bd9751a4ceab.json'),
+        'folderId' => env('GOOGLE_DRIVE_FOLDER_ID'),
     ],
 
 ];
