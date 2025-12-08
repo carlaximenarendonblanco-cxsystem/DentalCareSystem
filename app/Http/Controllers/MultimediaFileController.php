@@ -9,52 +9,27 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use ZipArchive;
 use Illuminate\Support\Facades\File;
-use Google\Client as GoogleClient;
-use Google\Service\Drive as GoogleDrive;
-use Google\Service\Drive\DriveFile;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 
 class MultimediaFileController extends Controller
 {
-    /**
-     * Obtiene el servicio de Google Drive
-     */
-    // app/Http/Controllers/MultimediaFileController.php
-
-    private function getDriveService()
-{
-    // Cargar la configuración JSON directamente desde la variable de entorno
-    $credentialsJson = env('GOOGLE_SERVICE_ACCOUNT_CREDENTIALS');
-
-    if (empty($credentialsJson)) {
-        // Loguea si la variable de Render no está configurada
-        Log::error("Variable de entorno GOOGLE_SERVICE_ACCOUNT_CREDENTIALS no configurada.");
-        abort(500, "Error de configuración de Drive. (Falta clave de entorno)");
-    }
-
-    try {
-        $client = new GoogleClient();
-        // IMPORTANTE: Decodificar el JSON guardado en la variable de entorno
-        $client->setAuthConfig(json_decode($credentialsJson, true));
-        $client->addScope(GoogleDrive::DRIVE);
-        $client->setAccessType('offline');
-
-        return new GoogleDrive($client);
-    } catch (\Exception $e) {
-        Log::error("Error al inicializar Google Drive: " . $e->getMessage());
-        abort(500, "Fallo crítico al conectar con Google Drive.");
-    }
-}
-
     public function index()
     {
         $query = MultimediaFile::with('patient')->latest();
+
+        // Si el usuario NO es super admin, filtrar por su clinic_id
         if (auth()->user()->role !== 'super_admin') {
-            $query->where('clinic_id', auth()->user()->clinic_id);
+            $clinicId = auth()->user()->clinic_id;
+            $query->where('clinic_id', $clinicId);
         }
+
+        // Paginación: 10 por página
         $studies = $query->paginate(10);
+
         return view('multimedia.index', compact('studies'));
     }
+
 
     public function create()
     {
@@ -77,17 +52,23 @@ class MultimediaFileController extends Controller
         ]);
 
         $multimedia->fill($validated);
+
+        // ➜ agregado
         $multimedia->edit_by = auth()->id();
 
         if ($multimedia->isDirty()) {
             $multimedia->save();
-            return redirect()->route('multimedia.index')
+
+            return redirect()
+                ->route('multimedia.index')
                 ->with('success', 'Información del estudio actualizada correctamente.');
         }
 
-        return redirect()->route('multimedia.index')
+        return redirect()
+            ->route('multimedia.index')
             ->with('info', 'No se detectaron cambios en la información.');
     }
+
 
     public function store(Request $request)
     {
@@ -99,73 +80,59 @@ class MultimediaFileController extends Controller
             'folder' => 'nullable|file|mimetypes:application/zip,application/x-zip-compressed'
         ]);
 
+        // --- AGREGADO PARA EVITAR EL ERROR DE clinic_id NULL ---
         $clinicId = auth()->user()->clinic_id ?? null;
         if (!$clinicId) {
             abort(403, 'No tienes una clínica asociada. No se puede crear el estudio.');
         }
+        // --------------------------------------------------------
 
         $studyCode = strtoupper(Str::random(8));
         $studyDate = Carbon::now()->toDateString();
         $folderName = "{$studyCode}_{$studyDate}";
 
-        $driveService = $this->getDriveService();
-        $driveFolderId = '14TaS42svjlWVzQNwa-mdcyOtWRnqyDz6';
+        $diskPath = "multimedia/{$folderName}";
+        $basePath = storage_path("app/public/{$diskPath}");
 
-        $uploadedIds = [];
+        if (!File::exists($basePath)) {
+            File::makeDirectory($basePath, 0775, true);
+        }
+
         $count = 0;
 
-        // Subir imágenes individuales
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $img) {
-                $fileMetadata = new DriveFile([
-                    'name' => Str::uuid() . '.' . $img->getClientOriginalExtension(),
-                    'parents' => [$driveFolderId]
-                ]);
-                $createdFile = $driveService->files->create($fileMetadata, [
-                    'data' => file_get_contents($img->getRealPath()),
-                    'mimeType' => $img->getMimeType(),
-                    'uploadType' => 'multipart'
-                ]);
-                $uploadedIds[] = $createdFile->id;
+                $filename = Str::uuid() . '.' . $img->getClientOriginalExtension();
+                $img->move($basePath, $filename);
                 $count++;
             }
         }
 
-        // Subir ZIP descomprimido
         if ($request->hasFile('folder')) {
             $zip = new ZipArchive;
             $zipPath = $request->file('folder')->getRealPath();
+
             if ($zip->open($zipPath) === true) {
-                $tempDir = storage_path("app/temp/{$folderName}");
-                if (!File::exists($tempDir)) File::makeDirectory($tempDir, 0775, true);
-                $zip->extractTo($tempDir);
+                $zip->extractTo($basePath);
                 $zip->close();
 
-                $directoryIterator = new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator($tempDir, \RecursiveDirectoryIterator::SKIP_DOTS),
-                    \RecursiveIteratorIterator::SELF_FIRST
-                );
-
-                $imagePattern = '/\.(png|jpg|jpeg)$/i';
-                foreach ($directoryIterator as $file) {
-                    if ($file->isFile() && preg_match($imagePattern, $file->getFilename())) {
-                        $fileMetadata = new DriveFile([
-                            'name' => $file->getFilename(),
-                            'parents' => [$driveFolderId]
-                        ]);
-                        $createdFile = $driveService->files->create($fileMetadata, [
-                            'data' => file_get_contents($file->getPathname()),
-                            'mimeType' => mime_content_type($file->getPathname()),
-                            'uploadType' => 'multipart'
-                        ]);
-                        $uploadedIds[] = $createdFile->id;
-                        $count++;
+                $count = 0;
+                if (File::isDirectory($basePath)) {
+                    $directoryIterator = new \RecursiveIteratorIterator(
+                        new \RecursiveDirectoryIterator($basePath, \RecursiveDirectoryIterator::SKIP_DOTS),
+                        \RecursiveIteratorIterator::SELF_FIRST
+                    );
+                    $imagePattern = '/\.(png|jpg|jpeg)$/i';
+                    foreach ($directoryIterator as $file) {
+                        if ($file->isFile() && preg_match($imagePattern, $file->getFilename())) {
+                            $count++;
+                        }
                     }
                 }
-
-                File::deleteDirectory($tempDir);
             }
         }
+
+        $relativePath = $diskPath;
 
         MultimediaFile::create([
             'name_patient' => $request->name_patient,
@@ -173,63 +140,63 @@ class MultimediaFileController extends Controller
             'study_code' => $studyCode,
             'study_date' => $studyDate,
             'study_type' => $request->study_type,
-            'study_uri' => json_encode($uploadedIds), // Guardamos los IDs de Drive
+            'study_uri' => $relativePath,
             'description' => $request->input('description'),
             'image_count' => $count,
-            'clinic_id' => $clinicId,
-            'created_by' => auth()->id(),
-            'edit_by' => auth()->id(),
+            'clinic_id' => $clinicId,      // ← AGREGADO
+            'created_by' => auth()->id(),  // ← AGREGADO
+            'edit_by' => auth()->id(),     // ← AGREGADO
         ]);
 
-        return redirect()->route('multimedia.index')->with('success', 'Estudio cargado correctamente en Google Drive.');
+        return redirect()->route('multimedia.index')->with('success', 'Estudio cargado correctamente.');
     }
 
     public function show($id)
     {
         $study = MultimediaFile::findOrFail($id);
-        $imageUrls = $this->getDriveImagesUrls($study);
+        $diskRootPath = storage_path("app/public/{$study->study_uri}");
+
+        $imageUrls = [];
+
+        if (File::isDirectory($diskRootPath)) {
+            $directoryIterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($diskRootPath, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::SELF_FIRST
+            );
+
+            $imagePattern = '/\.(png|jpg|jpeg)$/i';
+
+            foreach ($directoryIterator as $file) {
+                if ($file->isFile() && preg_match($imagePattern, $file->getFilename())) {
+                    $fullPath = $file->getPathname();
+                    $relativePathToFile = substr($fullPath, strlen($diskRootPath) + 1);
+                    $imageUrls[] = route('multimedia.image', [
+                        'studyCode' => $study->study_code,
+                        'fileName' => $relativePathToFile
+                    ]);
+                }
+            }
+        }
+
         return view('multimedia.show', compact('study', 'imageUrls'));
     }
 
-    public function tool($id)
+    public function serveImage($studyCode, $fileName)
     {
-        $study = MultimediaFile::findOrFail($id);
-        $imageUrls = $this->getDriveImagesUrls($study);
-        return view('multimedia.tool', compact('study', 'imageUrls'));
-    }
-
-    public function measure($id)
-    {
-        $study = MultimediaFile::findOrFail($id);
-        $imageUrls = $this->getDriveImagesUrls($study);
-        return view('multimedia.measure', compact('study', 'imageUrls'));
-    }
-
-    public function driveImage($fileId)
-    {
-        $driveService = $this->getDriveService();
-
-        // Obtener contenido del archivo desde Drive
-        $content = $driveService->files->get($fileId, ['alt' => 'media']);
-
-        // Obtener el mime type
-        $file = $driveService->files->get($fileId);
-        $mimeType = $file->getMimeType();
-
-        return response($content, 200)->header('Content-Type', $mimeType);
+        $study = MultimediaFile::where('study_code', $studyCode)->firstOrFail();
+        $path = storage_path("app/public/{$study->study_uri}/{$fileName}");
+        if (!File::exists($path)) {
+            abort(404);
+        }
+        return response()->file($path);
     }
 
     public function destroy($id)
     {
         $study = MultimediaFile::findOrFail($id);
-        $driveService = $this->getDriveService();
-        $fileIds = json_decode($study->study_uri, true) ?? [];
-        foreach ($fileIds as $fid) {
-            try {
-                $driveService->files->delete($fid);
-            } catch (\Exception $e) {
-                // Ignorar si ya no existe
-            }
+        $dir = storage_path("app/public/{$study->study_uri}");
+        if (File::isDirectory($dir)) {
+            File::deleteDirectory($dir);
         }
         $study->delete();
         return redirect()->route('multimedia.index')->with('danger', 'Estudio eliminado correctamente.');
@@ -238,28 +205,79 @@ class MultimediaFileController extends Controller
     public function search(Request $request)
     {
         $search = $request->input('search');
-        $query = MultimediaFile::where('ci_patient', 'LIKE', "%{$search}%")
-            ->orWhere('study_date', 'LIKE', "%{$search}%")
-            ->orWhere('name_patient', 'LIKE', "%{$search}%");
 
+        $query = MultimediaFile::where('ci_patient', 'LIKE', '%' . $search . '%')
+            ->orWhere('study_date', 'LIKE', '%' . $search . '%')
+            ->orWhere('name_patient', 'LIKE', '%' . $search . '%');
+
+        // Filtrar por clínica si no es super_admin
         if (auth()->user()->role !== 'super_admin') {
-            $query->where('clinic_id', auth()->user()->clinic_id);
+            $clinicId = auth()->user()->clinic_id;
+            $query->where('clinic_id', $clinicId);
         }
 
         $files = $query->latest()->paginate(10);
+
         return view('multimedia.search', compact('files'));
     }
 
-    /**
-     * Devuelve URLs de imágenes desde Drive
-     */
-    private function getDriveImagesUrls(MultimediaFile $study)
+    public function measure($id)
     {
-        $fileIds = json_decode($study->study_uri, true) ?? [];
-        $urls = [];
-        foreach ($fileIds as $fid) {
-            $urls[] = route('multimedia.driveImage', ['fileId' => $fid]);
+        $study = MultimediaFile::findOrFail($id);
+
+        $diskRootPath = storage_path("app/public/{$study->study_uri}");
+        $imageUrls = [];
+
+        if (File::isDirectory($diskRootPath)) {
+            $directoryIterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($diskRootPath, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::SELF_FIRST
+            );
+
+            $imagePattern = '/\.(png|jpg|jpeg)$/i';
+
+            foreach ($directoryIterator as $file) {
+                if ($file->isFile() && preg_match($imagePattern, $file->getFilename())) {
+                    $fullPath = $file->getPathname();
+                    $relativePathToFile = substr($fullPath, strlen($diskRootPath) + 1);
+                    $imageUrls[] = route('multimedia.image', [
+                        'studyCode' => $study->study_code,
+                        'fileName' => $relativePathToFile
+                    ]);
+                }
+            }
         }
-        return $urls;
+
+        return view('multimedia.measure', compact('study', 'imageUrls'));
+    }
+
+    public function tool($id)
+    {
+        $study = MultimediaFile::findOrFail($id);
+
+        $diskRootPath = storage_path("app/public/{$study->study_uri}");
+        $imageUrls = [];
+
+        if (File::isDirectory($diskRootPath)) {
+            $directoryIterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($diskRootPath, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::SELF_FIRST
+            );
+
+            $imagePattern = '/\.(png|jpg|jpeg)$/i';
+
+            foreach ($directoryIterator as $file) {
+                if ($file->isFile() && preg_match($imagePattern, $file->getFilename())) {
+                    $fullPath = $file->getPathname();
+                    $relativePathToFile = substr($fullPath, strlen($diskRootPath) + 1);
+                    $imageUrls[] = route('multimedia.image', [
+                        'studyCode' => $study->study_code,
+                        'fileName' => $relativePathToFile
+                    ]);
+                }
+            }
+        }
+
+        return view('multimedia.tool', compact('study', 'imageUrls'));
     }
 }
