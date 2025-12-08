@@ -169,17 +169,15 @@
     <div class="mt-8">
         <h1 class="title1 text-center pb-4">{{ __('Estudios del Paciente') }}</h1>
         @if($patient->multimediaFiles->isEmpty())
-        <p class="text-gray-700 text-center">El paciente no tiene estudios registrados.</p>
+        <p class="text-gray-700">El paciente no tiene estudios registrados.</p>
         @else
         @foreach($patient->multimediaFiles as $file)
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="flex justify-center grid grid-cols-1 md:grid-cols-3 gap-6">
             <a href="{{ route('multimedia.show', $file->id) }}"
                 class="shadow rounded-lg p-4 hover:bg-gray-100 transition block text-center">
-
                 <img src="{{ $file->first_image_url }}"
                     class="w-full h-40 object-cover rounded-md mb-3">
-
-                <p class="font-semibold">Multimedia / Herramientas</p>
+                <p class="font-semibold">Estidio radiográfico</p>
                 <p class="text-sm text-gray-600">Código: {{ $file->study_code }}</p>
             </a>
         </div>
