@@ -126,7 +126,7 @@
         <img src="{{ asset('assets/images/banner.png') }}" alt="Banner Dental Care" class="banner">
 
         <!-- Enlace Términos y Condiciones en top-right -->
-        <a href="{{ route('terminos.users') }}" class="terms-link">Términos y Condiciones</a>
+        <a href="{{ route('terminos') }}" class="terms-link">Términos y Condiciones</a>
 
         <div class="hero-content">
             <img src="{{ asset('assets/images/logo.png') }}" alt="Logo Dental Care" width="400">
