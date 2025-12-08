@@ -56,7 +56,12 @@ class PatientController extends Controller
                 if ($user->role !== 'superadmin') {
                     $q->where('clinic_id', $user->clinic_id);
                 }
-            }
+            },
+            'multimediaFiles' => function ($q) use ($user) {
+                if ($user->role !== 'superadmin') {
+                    $q->where('clinic_id', $user->clinic_id);
+                }
+            },
         ]);
 
         return view('patient.show', compact('patient'));

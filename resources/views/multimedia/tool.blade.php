@@ -53,11 +53,9 @@
 <div id="imgContainer" class="relative flex justify-center border rounded-lg overflow-hidden bg-black mx-auto"
      style="width:1100px; height:800px; cursor:grab;">
     <img id="studyImage" src="{{ $imageUrls[0] ?? '' }}" draggable="false"
-         style="transform:scale(1); user-select:none; transition:transform .2s;">
+         style="max-width:100%; max-height:100%; object-fit:contain; transform:scale(1); user-select:none; transition:transform .2s;">
 </div>
 
-
-{{-- ==========================  SCRIPT MEJORADO ========================== --}}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
