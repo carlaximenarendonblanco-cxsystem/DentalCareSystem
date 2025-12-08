@@ -21,7 +21,7 @@
 
         @if(isset($procedures) && count($procedures) > 0)
         <div>
-            <h3 class="title4">{{ __('Procedimientos Realizados') }}</h3>
+            <h3 class="title4">{{ __('Procedimientos') }}</h3>
 
             <ul class="list-disc pl-6 text-lg">
                 @foreach($procedures as $proc)

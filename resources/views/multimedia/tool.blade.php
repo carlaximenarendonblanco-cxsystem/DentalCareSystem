@@ -22,194 +22,109 @@
     </select>
 </div>
 
-{{-- Botones de filtros --}}
+{{-- Botones --}}
 <div class="relative flex justify-center space-x-2 mb-6">
     @php
     $filters = [
-    ['id'=>'zoomIn','img'=>'zoom.png','title'=>'Acercar'],
-    ['id'=>'zoomOut','img'=>'unzoom.png','title'=>'Alejar'],
-    ['id'=>'invertColors','img'=>'negative.png','title'=>'Negativo'],
-    ['id'=>'increaseBrightness','img'=>'filter3.png','title'=>'Más Brillo'],
-    ['id'=>'decreaseBrightness','img'=>'filter4.png','title'=>'Menos Brillo'],
-    ['id'=>'increaseContrast','img'=>'filter1.png','title'=>'Más Contraste'],
-    ['id'=>'decreaseContrast','img'=>'filter2.png','title'=>'Menos Contraste'],
-    ['id'=>'downloadImage','img'=>'download.png','title'=>'Descargar'],
+        ['id'=>'zoomIn','img'=>'zoom.png','title'=>'Acercar'],
+        ['id'=>'zoomOut','img'=>'unzoom.png','title'=>'Alejar'],
+        ['id'=>'invertColors','img'=>'negative.png','title'=>'Negativo'],
+        ['id'=>'increaseBrightness','img'=>'filter3.png','title'=>'Más Brillo'],
+        ['id'=>'decreaseBrightness','img'=>'filter4.png','title'=>'Menos Brillo'],
+        ['id'=>'increaseContrast','img'=>'filter1.png','title'=>'Más Contraste'],
+        ['id'=>'decreaseContrast','img'=>'filter2.png','title'=>'Menos Contraste'],
+        ['id'=>'downloadImage','img'=>'download.png','title'=>'Descargar'],
     ];
     @endphp
+
     @foreach($filters as $filter)
     <div class="group relative">
-        @if($filter['id'] === 'save')
-        <form id="saveImageForm" action="{{ route('tool.store', ['radiography_id' => 0, 'tomography_id' => 0, 'ci_patient' => $study->ci_patient, 'id' => $study->id]) }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            <button id="{{ $filter['id'] }}" class="btnimg" type="submit">
-                <img src="{{ asset('assets/images/'.$filter['img']) }}" width="50" height="50">
-            </button>
-        </form>
-        @else
         <button id="{{ $filter['id'] }}" class="btnimg">
-            <img src="{{ asset('assets/images/'.$filter['img']) }}" width="50" height="50">
+            <img src="{{ asset('assets/images/'.$filter['img']) }}" width="50">
         </button>
-        @endif
-        <div class="hidden group-hover:block absolute left-0 mt-2 bg-gray-500 bg-opacity-50 text-center rounded-md px-2 py-1">
-            <span class="text-sm text-gray-100">{{ $filter['title'] }}</span>
+        <div class="hidden group-hover:block absolute left-0 mt-2 bg-gray-800 text-white text-xs rounded-md px-2 py-1">
+            {{ $filter['title'] }}
         </div>
     </div>
     @endforeach
 </div>
 
-{{-- Contenedor scrollable para la imagen --}}
-<div class="relative flex justify-center mt-4 mb-4 border rounded-lg overflow-auto" style="max-width:1100px; max-height:800px;">
-    <img id="studyImage" src="{{ $imageUrls[0] ?? '' }}" style="cursor: grab; user-select: none; transform: scale(1);">
+{{-- CONTENEDOR - movimiento mejorado --}}
+<div id="imgContainer" class="relative flex justify-center border rounded-lg overflow-hidden bg-black mx-auto"
+     style="width:1100px; height:800px; cursor:grab;">
+    <img id="studyImage" src="{{ $imageUrls[0] ?? '' }}" draggable="false"
+         style="transform:scale(1); user-select:none; transition:transform .2s;">
 </div>
 
+
+{{-- ==========================  SCRIPT MEJORADO ========================== --}}
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const img = document.getElementById('studyImage');
-        const container = img.parentElement;
-        const imageSelect = document.getElementById('imageSelect');
+document.addEventListener('DOMContentLoaded', () => {
 
-        let zoom = 1;
-        let brightness = 0;
-        let contrast = 1;
-        let isNegative = false;
-        let edgesApplied = false;
+    const img = document.getElementById('studyImage');
+    const container = document.getElementById('imgContainer');
+    const imageSelect = document.getElementById('imageSelect');
 
-        let isDragging = false;
-        let startX, startY;
-        let scrollLeft, scrollTop;
+    let zoom = 1, brightness = 0, contrast = 1, negative = false;
 
-        function updateFilters() {
-            let filterStr = `brightness(${1 + brightness}) contrast(${contrast})`;
-            if (isNegative) filterStr += ' invert(1)';
-            img.style.filter = filterStr;
+    function applyFilters(){
+        img.style.filter = `
+            brightness(${1 + brightness})
+            contrast(${contrast})
+            ${negative ? 'invert(1)' : ''}
+        `;
+    }
+
+    /* CAMBIAR IMAGEN */
+    imageSelect.onchange = e=>{
+        img.src = e.target.value;
+        zoom=1; brightness=0; contrast=1; negative=false;
+        img.style.transform=`scale(1)`;
+        applyFilters();
+    }
+
+    /* ZOOM */
+    zoomIn.onclick = ()=>{ zoom = Math.min(3, zoom+0.15); img.style.transform=`scale(${zoom})`; }
+    zoomOut.onclick = ()=>{ zoom = Math.max(.4, zoom-0.15); img.style.transform=`scale(${zoom})`; }
+
+    /* FILTROS */
+    increaseBrightness.onclick =()=>{ brightness = Math.min(brightness+0.1,1); applyFilters(); }
+    decreaseBrightness.onclick =()=>{ brightness = Math.max(brightness-0.1,-1); applyFilters(); }
+    increaseContrast.onclick   =()=>{ contrast = Math.min(contrast+0.1,3); applyFilters(); }
+    decreaseContrast.onclick   =()=>{ contrast = Math.max(contrast-0.1,0); applyFilters(); }
+    invertColors.onclick       =()=>{ negative = !negative; applyFilters(); }
+
+    /* DESCARGAR IMAGEN */
+    downloadImage.onclick = ()=>{
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        let temp = new Image(); temp.crossOrigin="anonymous";
+        temp.onload = ()=>{
+            canvas.width=temp.width; canvas.height=temp.height;
+            ctx.filter = `brightness(${1+brightness}) contrast(${contrast}) ${negative?'invert(1)':''}`;
+            ctx.drawImage(temp,0,0);
+            let a=document.createElement('a');
+            a.download="imagen_filtrada.png";
+            a.href=canvas.toDataURL("image/png");
+            a.click();
         }
+        temp.src=img.src;
+    };
 
-        // Cambio de imagen
-        imageSelect.addEventListener('change', (e) => {
-            img.src = e.target.value;
-            zoom = 1;
-            brightness = 0;
-            contrast = 1;
-            isNegative = false;
-            edgesApplied = false;
-            img.style.transform = `scale(${zoom})`;
-            updateFilters();
-        });
-
-        // Zoom
-        document.getElementById('zoomIn').addEventListener('click', () => {
-            zoom = Math.min(3, zoom + 0.1);
-            img.style.transform = `scale(${zoom})`;
-        });
-        document.getElementById('zoomOut').addEventListener('click', () => {
-            zoom = Math.max(0.2, zoom - 0.1);
-            img.style.transform = `scale(${zoom})`;
-        });
-
-        // Filtros
-        document.getElementById('increaseBrightness').addEventListener('click', () => {
-            brightness = Math.min(brightness + 0.1, 1);
-            updateFilters();
-        });
-        document.getElementById('decreaseBrightness').addEventListener('click', () => {
-            brightness = Math.max(brightness - 0.1, -1);
-            updateFilters();
-        });
-        document.getElementById('increaseContrast').addEventListener('click', () => {
-            contrast = Math.min(contrast + 0.1, 3);
-            updateFilters();
-        });
-        document.getElementById('decreaseContrast').addEventListener('click', () => {
-            contrast = Math.max(contrast - 0.1, 0);
-            updateFilters();
-        });
-        document.getElementById('invertColors').addEventListener('click', () => {
-            isNegative = !isNegative;
-            updateFilters();
-        });
-
-        // Bordes (simplificado)
-        document.getElementById('edgesButton').addEventListener('click', () => {
-            if (edgesApplied) {
-                img.src = imageSelect.value;
-                edgesApplied = false;
-                updateFilters();
-                return;
-            }
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const tempImg = new Image();
-            tempImg.crossOrigin = "anonymous";
-            tempImg.onload = () => {
-                canvas.width = tempImg.width;
-                canvas.height = tempImg.height;
-                ctx.drawImage(tempImg, 0, 0);
-                let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                let data = imageData.data;
-                for (let i = 0; i < data.length; i += 4) {
-                    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                    data[i] = data[i + 1] = data[i + 2] = avg;
-                }
-                ctx.putImageData(imageData, 0, 0);
-                img.src = canvas.toDataURL();
-                edgesApplied = true;
-            }
-            tempImg.src = img.src;
-        });
-
-        // Descargar con filtros aplicados
-        // Descargar con filtros aplicados
-        document.getElementById('downloadImage').addEventListener('click', () => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const tempImg = new Image();
-            tempImg.crossOrigin = "anonymous";
-            tempImg.onload = () => {
-                canvas.width = tempImg.width;
-                canvas.height = tempImg.height;
-
-                // Construir el filtro para canvas
-                let filterStr = `brightness(${1 + brightness}) contrast(${contrast})`;
-                if (isNegative) filterStr += ' invert(1)';
-                ctx.filter = filterStr;
-
-                ctx.drawImage(tempImg, 0, 0);
-                const link = document.createElement('a');
-                link.download = 'imagen_filtrada.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            };
-            tempImg.src = img.src;
-        });
-
-
-        // Mover imagen cuando hay zoom
-        img.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            startX = e.pageX - container.offsetLeft;
-            startY = e.pageY - container.offsetTop;
-            scrollLeft = container.scrollLeft;
-            scrollTop = container.scrollTop;
-            img.style.cursor = 'grabbing';
-        });
-        img.addEventListener('mouseup', () => {
-            isDragging = false;
-            img.style.cursor = 'grab';
-        });
-        img.addEventListener('mouseleave', () => {
-            isDragging = false;
-            img.style.cursor = 'grab';
-        });
-        img.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            e.preventDefault();
-            const x = e.pageX - container.offsetLeft;
-            const y = e.pageY - container.offsetTop;
-            const walkX = (x - startX) * -1;
-            const walkY = (y - startY) * -1;
-            container.scrollLeft = scrollLeft + walkX;
-            container.scrollTop = scrollTop + walkY;
-        });
+    /* DRAG PARA MOVER LA IMAGEN */
+    let drag=false, sx,sy, scrollX, scrollY;
+    container.addEventListener('mousedown',e=>{
+        drag=true; container.style.cursor='grabbing';
+        sx=e.clientX; sy=e.clientY;
+        scrollX=container.scrollLeft; scrollY=container.scrollTop;
     });
+    window.addEventListener('mouseup',()=>{ drag=false; container.style.cursor='grab'; });
+    container.addEventListener('mousemove',e=>{
+        if(!drag || zoom<=1) return;
+        container.scrollLeft=scrollX-(e.clientX-sx);
+        container.scrollTop =scrollY-(e.clientY-sy);
+    });
+
+});
 </script>
 @endsection

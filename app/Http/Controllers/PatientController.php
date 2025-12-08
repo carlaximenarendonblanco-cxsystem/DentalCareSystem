@@ -92,8 +92,9 @@ class PatientController extends Controller
 
         $query->where(function ($q) use ($search) {
             $q->whereRaw('LOWER(name_patient) LIKE ?', ["%{$search}%"])
-                ->orWhereRaw('LOWER(ci_patient) LIKE ?', ["%{$search}%"]);
+                ->orWhereRaw('CAST(ci_patient AS TEXT) LIKE ?', ["%{$search}%"]);
         });
+
 
         if ($user->role !== 'superadmin') {
             $query->where('clinic_id', $user->clinic_id);
