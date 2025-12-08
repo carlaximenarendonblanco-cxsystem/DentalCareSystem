@@ -175,7 +175,7 @@
                 const isMobile = window.innerWidth < 640;
 
                 const calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: isMobile ? 'listWeek' : 'timeGridMonth',
+                    initialView: isMobile ? 'listWeek' : 'dayGridMonth', 
                     locale: 'es',
                     slotEventOverlap: false, 
                     buttonText: {

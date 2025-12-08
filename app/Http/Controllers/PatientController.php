@@ -59,7 +59,9 @@ class PatientController extends Controller
             },
             'multimediaFiles' => function ($q) use ($user) {
                 if ($user->role !== 'superadmin') {
-                    $q->where('clinic_id', $user->clinic_id);
+                    $q->whereHas('patient', function ($p) use ($user) {
+                        $p->where('clinic_id', $user->clinic_id);
+                    });
                 }
             },
         ]);
