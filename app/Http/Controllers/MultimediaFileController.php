@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\File;
 use Google\Client as GoogleClient;
 use Google\Service\Drive as GoogleDrive;
 use Google\Service\Drive\DriveFile;
+use Illuminate\Support\Facades\Log;
 
 class MultimediaFileController extends Controller
 {
@@ -21,29 +22,29 @@ class MultimediaFileController extends Controller
     // app/Http/Controllers/MultimediaFileController.php
 
     private function getDriveService()
-    {
-        // Obtener las credenciales directamente de la variable de entorno de Render
-        $credentialsJson = env('GOOGLE_SERVICE_ACCOUNT_CREDENTIALS');
+{
+    // Cargar la configuración JSON directamente desde la variable de entorno
+    $credentialsJson = env('GOOGLE_SERVICE_ACCOUNT_CREDENTIALS');
 
-        if (empty($credentialsJson)) {
-            // Loguea si no está configurada la variable en Render
-            \Log::error("Variable de entorno GOOGLE_SERVICE_ACCOUNT_CREDENTIALS no configurada.");
-            abort(500, "Error de configuración de Drive.");
-        }
-
-        try {
-            $client = new GoogleClient();
-            // Carga la configuración directamente desde el string JSON
-            $client->setAuthConfig(json_decode($credentialsJson, true));
-            $client->addScope(GoogleDrive::DRIVE);
-            $client->setAccessType('offline');
-
-            return new GoogleDrive($client);
-        } catch (\Exception $e) {
-            \Log::error("Error al inicializar Google Drive: " . $e->getMessage());
-            abort(500, "Fallo crítico en Google Drive.");
-        }
+    if (empty($credentialsJson)) {
+        // Loguea si la variable de Render no está configurada
+        Log::error("Variable de entorno GOOGLE_SERVICE_ACCOUNT_CREDENTIALS no configurada.");
+        abort(500, "Error de configuración de Drive. (Falta clave de entorno)");
     }
+
+    try {
+        $client = new GoogleClient();
+        // IMPORTANTE: Decodificar el JSON guardado en la variable de entorno
+        $client->setAuthConfig(json_decode($credentialsJson, true));
+        $client->addScope(GoogleDrive::DRIVE);
+        $client->setAccessType('offline');
+
+        return new GoogleDrive($client);
+    } catch (\Exception $e) {
+        Log::error("Error al inicializar Google Drive: " . $e->getMessage());
+        abort(500, "Fallo crítico al conectar con Google Drive.");
+    }
+}
 
     public function index()
     {
