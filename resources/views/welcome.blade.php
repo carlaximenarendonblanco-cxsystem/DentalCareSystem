@@ -124,6 +124,12 @@
 <body>
     <div class="hero">
         <img src="{{ asset('assets/images/banner.png') }}" alt="Banner Dental Care" class="banner">
+        <a href="{{ route('terminos.users') }}" 
+           style="position: absolute; top: 20px; right: 20px; background-color: #fff; 
+                  color: #1d4ed8; padding: 10px 15px; border-radius: 5px; text-decoration: none; 
+                  font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+           Términos y Condiciones
+        </a>
         <div class="hero-content">
             <img src="{{ asset('assets/images/logo.png') }}" alt="Logo Dental Care" width="400">
             <h1>¡Bienvenido!</h1>
