@@ -166,4 +166,7 @@ public function store(Request $request)
 
         return view('admin.users', compact('users', 'query'));
     }
+    public function terminos(){
+        return view('terminos');
+    }
 }

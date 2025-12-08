@@ -53,7 +53,7 @@ class Patient extends Model implements Auditable
     }
     public function multimediaFiles(): HasMany
     {
-        return $this->hasMany(Tool::class, 'ci_patient', 'ci_patient');
+        return $this->hasMany(MultimediaFile::class, 'ci_patient', 'ci_patient');
     }
     public function clinic()
     {
