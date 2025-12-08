@@ -21,7 +21,7 @@ Route::get('/', function () {
 
 Route::get('/terminos-condiciones', function () {
     return view('terminos');
-});
+})->name('terminos'); 
 
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
     Route::get('/dashboard', function () {
