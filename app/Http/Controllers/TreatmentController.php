@@ -112,7 +112,7 @@ class TreatmentController extends Controller
             'author'    => $user->name,
             'clinic'    => $clinic,
         ])->setPaper('letter', 'portrait');
-        
+
         $patientName = $treatment->name ?? 'Paciente';
         $patientName = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $patientName);
         $patientName = preg_replace('/[^\w\s-]/u', '', $patientName);
@@ -182,7 +182,11 @@ class TreatmentController extends Controller
     }
     public function newCreate(Patient $patient)
     {
-        $budgets = Budget::all();
+        $user = Auth::user();
+
+        $budgets = ($user->role === 'superadmin')
+            ? Budget::all()
+            : Budget::where('clinic_id', $user->clinic_id)->get();
 
         return view('treatments.create', [
             'patient' => $patient,

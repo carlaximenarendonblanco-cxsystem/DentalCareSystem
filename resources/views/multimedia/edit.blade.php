@@ -9,7 +9,7 @@
     <a href="{{ route('multimedia.index') }}" class="botton1">{{ __('Atrás') }}</a>
 </div>
 <div class="bg-white rounded-lg max-w-5xl mx-auto p-6">
-    <form method="POST" action="{{ route('multimedia.update', $multimedia->id) }}">
+    <form method="POST" action="{{ route('multimedia.update', $multimedia->id) }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <h1 class="title1 text-center mb-8">{{ __('Editar Información del Estudio') }}</h1>
@@ -38,10 +38,20 @@
             </div>
             <div>
                 <label class="title4 block mb-2">{{ __('Descripción') }}:</label>
-                <textarea name="description" value="{{ old('details') }}" class="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:border-cyan-500 focus:ring focus:ring-cyan-300 focus:ring-opacity-50 transition duration-200 ease-in-out text-gray-700 bg-white" rows="2"></textarea>
+                <textarea name="description" class="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:border-cyan-500 focus:ring focus:ring-cyan-300 focus:ring-opacity-50 transition duration-200 ease-in-out text-gray-700 bg-white" rows="2">{{ old('description', $multimedia->description) }}</textarea>
                 @error('description') <p class="error mt-1">{{ $message }}</p> @enderror
             </div>
+
+            {{-- Solo superadmin puede subir archivo --}}
+            @if(auth()->user()->role === 'superadmin')
+            <div class="col-span-2">
+                <label class="title4 block mb-2">{{ __('Subir archivo') }}:</label>
+                <input type="file" name="file" class="w-full border border-gray-300 rounded-xl p-2" />
+                <p class="text-gray-500 text-sm mt-1">Solo superadmin puede actualizar archivos.</p>
+            </div>
+            @endif
         </div>
+
         <div class="flex justify-center mt-6">
             <button type="submit" class="botton2">{{ __('Actualizar') }}</button>
         </div>

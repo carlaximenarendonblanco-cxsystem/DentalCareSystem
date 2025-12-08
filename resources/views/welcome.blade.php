@@ -124,9 +124,10 @@
 <body>
     <div class="hero">
         <img src="{{ asset('assets/images/banner.png') }}" alt="Banner Dental Care" class="banner">
-        <a href="{{ route('terminos.users') }}" class="flex justify-end">
-           Términos y Condiciones
-        </a>
+
+        <!-- Enlace Términos y Condiciones en top-right -->
+        <a href="{{ route('terminos.users') }}" class="terms-link">Términos y Condiciones</a>
+
         <div class="hero-content">
             <img src="{{ asset('assets/images/logo.png') }}" alt="Logo Dental Care" width="400">
             <h1>¡Bienvenido!</h1>
@@ -141,5 +142,26 @@
             @endif
         </div>
     </div>
+
+    <style>
+        .terms-link {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            background-color: rgba(0,0,0,0.5);
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            z-index: 3;
+        }
+
+        .terms-link:hover {
+            background-color: rgba(0,0,0,0.7);
+        }
+    </style>
 </body>
+
 </html>

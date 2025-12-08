@@ -16,20 +16,14 @@ class MultimediaFileController extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
         $query = MultimediaFile::with('patient')->latest();
-
-        // Si el usuario NO es super admin, filtrar por su clinic_id
-        if (auth()->user()->role !== 'super_admin') {
-            $clinicId = auth()->user()->clinic_id;
-            $query->where('clinic_id', $clinicId);
+        if ($user->role !== 'superadmin') {
+            $query->where('clinic_id', $user->clinic_id);
         }
-
-        // Paginación: 10 por página
         $studies = $query->paginate(10);
-
         return view('multimedia.index', compact('studies'));
     }
-
 
     public function create()
     {
@@ -49,16 +43,27 @@ class MultimediaFileController extends Controller
             'ci_patient' => 'required|max:50',
             'study_type' => 'required|string|max:255',
             'description' => 'nullable|string',
+            // Solo superadmin puede subir imágenes
+            'image' => auth()->user()->role === 'super_admin' ? 'nullable|image|mimes:jpg,jpeg,png|max:10240' : ''
         ]);
 
         $multimedia->fill($validated);
-
-        // ➜ agregado
         $multimedia->edit_by = auth()->id();
+
+        // Procesar imagen si es super_admin
+        if ($request->hasFile('image') && auth()->user()->role === 'super_admin') {
+            $img = $request->file('image');
+            $filename = Str::uuid() . '.' . $img->getClientOriginalExtension();
+            $path = storage_path("app/public/multimedia/{$multimedia->study_code}_{$multimedia->study_date}");
+            if (!File::exists($path)) File::makeDirectory($path, 0775, true);
+            $img->move($path, $filename);
+
+            // Actualizar count si quieres
+            $multimedia->image_count = $multimedia->image_count + 1;
+        }
 
         if ($multimedia->isDirty()) {
             $multimedia->save();
-
             return redirect()
                 ->route('multimedia.index')
                 ->with('success', 'Información del estudio actualizada correctamente.');
@@ -68,7 +73,6 @@ class MultimediaFileController extends Controller
             ->route('multimedia.index')
             ->with('info', 'No se detectaron cambios en la información.');
     }
-
 
     public function store(Request $request)
     {
