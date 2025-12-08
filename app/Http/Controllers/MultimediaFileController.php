@@ -18,23 +18,31 @@ class MultimediaFileController extends Controller
     /**
      * Obtiene el servicio de Google Drive
      */
+    // app/Http/Controllers/MultimediaFileController.php
+
     private function getDriveService()
     {
-        // 🚨 CAMBIO CLAVE AQUÍ: Usamos storage_path() y la ruta relativa dentro de storage/app/
-        $jsonPath = resource_path('credentials/sixth-starlight-480520-h9-bd9751a4ceab.json');
+        // Obtener las credenciales directamente de la variable de entorno de Render
+        $credentialsJson = env('GOOGLE_SERVICE_ACCOUNT_CREDENTIALS');
 
-        if (!File::exists($jsonPath)) {
-            // ... (Tu logging y abort 500)
-            \Log::error("Archivo de credenciales de Google Drive no encontrado: {$jsonPath}");
-            abort(500, "Error de Configuración de Drive: Credenciales no encontradas.");
+        if (empty($credentialsJson)) {
+            // Loguea si no está configurada la variable en Render
+            \Log::error("Variable de entorno GOOGLE_SERVICE_ACCOUNT_CREDENTIALS no configurada.");
+            abort(500, "Error de configuración de Drive.");
         }
 
-        $client = new GoogleClient();
-        $client->setAuthConfig($jsonPath);
-        $client->addScope(GoogleDrive::DRIVE);
-        $client->setAccessType('offline');
+        try {
+            $client = new GoogleClient();
+            // Carga la configuración directamente desde el string JSON
+            $client->setAuthConfig(json_decode($credentialsJson, true));
+            $client->addScope(GoogleDrive::DRIVE);
+            $client->setAccessType('offline');
 
-        return new GoogleDrive($client);
+            return new GoogleDrive($client);
+        } catch (\Exception $e) {
+            \Log::error("Error al inicializar Google Drive: " . $e->getMessage());
+            abort(500, "Fallo crítico en Google Drive.");
+        }
     }
 
     public function index()
