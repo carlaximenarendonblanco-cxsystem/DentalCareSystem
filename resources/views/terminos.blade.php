@@ -153,8 +153,6 @@
             se recomienda mantener también respaldos locales de la información más relevante si aplica.
         <ul>
             <li>La plataforma podrá realizar mejoras, actualizaciones y cambios en funciones sin previo aviso para optimización del servicio.</li>
-            <li>Se podrá modificar este documento cuando se considere necesario; el uso continuado del sistema implica la aceptación de dichas modificaciones.</li>
-        </ul>
         </p>
 
         <h2>6. Limitación de responsabilidad</h2>
