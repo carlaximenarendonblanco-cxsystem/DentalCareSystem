@@ -41,20 +41,10 @@ class PaymentController extends Controller
         $payments = $treatment->payments()->latest()->get();
         $paid = $payments->sum('amount');
         $remaining = $treatment->amount - $paid;
-        $procedures = [];
-
-        $codes = json_decode($treatment->budget_codes, true); // lo convertimos a array
-
-        if (is_array($codes)) {
-            $procedures = Budget::whereIn('id', array_keys($codes))->get();
-        } else {
-            $procedures = [];
-        }
-
-
+        $procedures = Budget::whereIn('id', array_keys($treatment->budget_codes ?? []))->get();
         return view('payments.show', compact('treatment', 'payments', 'paid', 'remaining', 'procedures'));
     }
-
+    
     public function create($treatment_id)
     {
         $treatment = $this->scopeByRole(Treatment::query())->findOrFail($treatment_id);
