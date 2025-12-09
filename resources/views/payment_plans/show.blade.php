@@ -90,7 +90,7 @@
             onsubmit="return confirm('¿Seguro que deseas eliminar el plan de pagos? Esta acción eliminará todas las cuotas.')">
             @csrf
             @method('DELETE')
-            <button class="botonDelete">Eliminar plan</button>
+            <button class="bottonDelete">Eliminar plan</button>
         </form>
     </div>
 </div>

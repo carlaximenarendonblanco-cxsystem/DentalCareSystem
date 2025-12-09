@@ -96,4 +96,29 @@ class BudgetController extends Controller
 
         return redirect()->route('budgets.index')->with('success', 'Presupuesto eliminado correctamente.');
     }
+    public function search(Request $request)
+    {
+        $search = trim($request->input('search'));
+        $user = Auth::user();
+
+        $query = Budget::with(['creator', 'editor']);
+
+        // Restringir por clínica si no es superadmin
+        if ($user->role !== 'superadmin') {
+            $query->where('clinic_id', $user->clinic_id);
+        }
+
+        // Aplicar búsqueda si hay texto
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('budget', 'like', "%{$search}%")
+                    ->orWhere('procedure', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $budgets = $query->orderBy('budget', 'ASC')->paginate(10);
+
+        return view('budgets.index', compact('budgets', 'search'));
+    }
 }
