@@ -42,14 +42,22 @@ class PaymentController extends Controller
         $paid = $payments->sum('amount');
         $remaining = $treatment->amount - $paid;
         $codes = $treatment->budget_codes;
-
         if (is_string($codes)) {
             $codes = json_decode($codes, true);
         }
         if (!is_array($codes)) {
             $codes = [];
         }
-        $procedures = Budget::whereIn('id', array_keys($codes))->get();
+
+        $ids = [];
+        if (!empty($codes)) {
+            if (array_keys($codes) !== range(0, count($codes) - 1)) {
+                $ids = array_keys($codes);
+            } else {
+                $ids = $codes;
+            }
+        }
+        $procedures = Budget::whereIn('id', $ids)->get();
         return view('payments.show', compact('treatment', 'payments', 'paid', 'remaining', 'procedures'));
     }
 

@@ -26,7 +26,9 @@
             <ul class="list-disc pl-6 text-lg">
                 @foreach($procedures as $proc)
                 <li>
+                    <strong>{{ $proc->procedure }}</strong> -
                     <small class="text-gray-500">{{ $proc->description }}</small>
+                    - Bs. {{ number_format($proc->total_amount, 2) }}
                 </li>
                 @endforeach
             </ul>
