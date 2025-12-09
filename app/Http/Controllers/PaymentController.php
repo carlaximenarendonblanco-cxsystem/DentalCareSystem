@@ -42,9 +42,11 @@ class PaymentController extends Controller
         $paid = $payments->sum('amount');
         $remaining = $treatment->amount - $paid;
         $procedures = [];
+
         if (!empty($treatment->budget_codes)) {
-            $procedures = Budget::whereIn('id', $treatment->budget_codes)->get();
+            $procedures = Budget::whereIn('id', array_keys($treatment->budget_codes))->get();
         }
+
         return view('payments.show', compact('treatment', 'payments', 'paid', 'remaining', 'procedures'));
     }
 

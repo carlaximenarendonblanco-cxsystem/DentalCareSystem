@@ -19,7 +19,6 @@ class Treatment extends Model
         'budget_codes' => 'array',
     ];
 
-
     public function payments()
     {
         return $this->hasMany(Payment::class);
