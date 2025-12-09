@@ -152,12 +152,8 @@ class PaymentPlanController extends Controller
     public function destroy(Treatment $treatment)
     {
         $plan = $treatment->paymentPlan;
-
         if (!$plan) {
             return back()->with('error', 'Este tratamiento no tiene un plan de pagos.');
-        }
-        if ($plan->installments()->whereNotNull('paid_at')->exists()) {
-            return back()->with('error', 'No se puede eliminar: existen cuotas pagadas.');
         }
         $plan->delete();
         return redirect()->route('payment_plans.show', $treatment->id)
