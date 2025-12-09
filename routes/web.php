@@ -117,5 +117,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
         Route::get('{treatment}/payment-plan', [PaymentPlanController::class, 'show'])
             ->name('payment_plans.show');
+        
+        Route::delete('{treatment}/payment-plan/destroy', [PaymentPlanController::class, 'destroy'])
+        ->name('payment_plans.destroy');
     });
 });

@@ -17,34 +17,34 @@
         <h1 class="title1 text-center pb-5">{{ __('Plan de Pagos del Tratamiento') }}</h1>
     </div>
 
-<!-- Información general del tratamiento -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 pb-5">
-    <div class="flex gap-2">
-        <h3 class="title4">{{ __('Paciente:') }}</h3><span class="txt">{{ $treatment->name ?? 'N/A' }}</span>
+    <!-- Información general del tratamiento -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 pb-5">
+        <div class="flex gap-2">
+            <h3 class="title4">{{ __('Paciente:') }}</h3><span class="txt">{{ $treatment->name ?? 'N/A' }}</span>
+        </div>
+        <div class="flex gap-2">
+            <h3 class="title4">{{ __('C.I.:') }}</h3><span class="txt">{{ $treatment->ci_patient ?? 'N/A' }}</span>
+        </div>
+        <div class="flex gap-2">
+            <h3 class="title4">{{ __('Monto total:') }}</h3><span class="txt">Bs. {{ number_format($treatment->amount, 2) }}</span>
+        </div>
+        <div class="flex gap-2">
+            <h3 class="title4">{{ __('Número de cuotas:') }}</h3><span class="txt">{{ $plan->installments_count ?? 0 }}</span>
+        </div>
+        @if($plan->amount_per_installment)
+        <div class="flex gap-2">
+            <h3 class="title4">{{ __('Monto promedio por cuota:') }}</h3><span class="txt">Bs. {{ number_format($plan->amount_per_installment, 2) }}</span>
+        </div>
+        @endif
     </div>
-    <div class="flex gap-2">
-        <h3 class="title4">{{ __('C.I.:') }}</h3><span class="txt">{{ $treatment->ci_patient ?? 'N/A' }}</span>
-    </div>
-    <div class="flex gap-2">
-        <h3 class="title4">{{ __('Monto total:') }}</h3><span class="txt">Bs. {{ number_format($treatment->amount, 2) }}</span>
-    </div>
-    <div class="flex gap-2">
-        <h3 class="title4">{{ __('Número de cuotas:') }}</h3><span class="txt">{{ $plan->installments_count ?? 0 }}</span>
-    </div>
-    @if($plan->amount_per_installment)
-    <div class="flex gap-2">
-        <h3 class="title4">{{ __('Monto promedio por cuota:') }}</h3><span class="txt">Bs. {{ number_format($plan->amount_per_installment, 2) }}</span>
-    </div>
-    @endif
-</div>
 
-<!-- Cuotas -->
-<div class="mt-8">
-    <h1 class="title1 text-center pb-4">{{ __('Cuotas Generadas') }}</h1>
+    <!-- Cuotas -->
+    <div class="mt-8">
+        <h1 class="title1 text-center pb-4">{{ __('Cuotas Generadas') }}</h1>
 
-    @if($plan->installments_relation->isEmpty())
+        @if($plan->installments_relation->isEmpty())
         <p class="text-gray-700 pl-4 text-center">{{ __('No se han generado cuotas.') }}</p>
-    @else
+        @else
         <!-- Tabla escritorio -->
         <div class="hidden sm:block">
             <div class="grid grid-cols-4 gap-4 font-semibold border-b border-gray-300 pb-2 mb-2 text-center">
@@ -83,8 +83,15 @@
             </div>
             @endforeach
         </div>
-    @endif
-</div>
-
+        @endif
+    </div>
+    <div class="flex justify-end">
+        <form action="{{ route('payment_plans.destroy', $treatment->id) }}" method="POST"
+            onsubmit="return confirm('¿Seguro que deseas eliminar el plan de pagos? Esta acción eliminará todas las cuotas.')">
+            @csrf
+            @method('DELETE')
+            <button class="btn btn-danger">Eliminar plan</button>
+        </form>
+    </div>
 </div>
 @endsection

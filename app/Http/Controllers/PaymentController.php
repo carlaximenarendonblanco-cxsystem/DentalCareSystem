@@ -43,9 +43,14 @@ class PaymentController extends Controller
         $remaining = $treatment->amount - $paid;
         $procedures = [];
 
-        if (!empty($treatment->budget_codes)) {
-            $procedures = Budget::whereIn('id', array_keys($treatment->budget_codes))->get();
+        $codes = json_decode($treatment->budget_codes, true); // lo convertimos a array
+
+        if (is_array($codes)) {
+            $procedures = Budget::whereIn('id', array_keys($codes))->get();
+        } else {
+            $procedures = [];
         }
+
 
         return view('payments.show', compact('treatment', 'payments', 'paid', 'remaining', 'procedures'));
     }
