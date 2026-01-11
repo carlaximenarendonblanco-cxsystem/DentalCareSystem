@@ -28,7 +28,7 @@ class PatientRequest extends FormRequest
         return [
             'name_patient' => 'required|string|max:100|min:3',
             'ci_patient' => [
-                'required',
+                'nullable',
                 'numeric',
                 Rule::unique('patients', 'ci_patient')->ignore($patientId),
             ],

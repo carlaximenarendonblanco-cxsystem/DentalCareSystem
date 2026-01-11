@@ -32,6 +32,9 @@ class PatientController extends Controller
     public function store(PatientRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        if (empty($data['ci_patient'])) {
+            $data['ci_patient'] = null;
+        }
         $data['clinic_id'] = Auth::user()->clinic_id;
         $data['created_by'] = Auth::id();
         Patient::create($data);

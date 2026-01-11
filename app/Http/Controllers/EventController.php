@@ -33,13 +33,13 @@ class EventController extends Controller
 
         if ($user->role === 'superadmin') {
             $doctors = User::whereIn('role', ['doctor', 'admin'])->get();
-            $patients = Patient::all();
+            $patients = Patient::orderBy('name_patient', 'ASC')->get();
         } else {
             $doctors = User::whereIn('role', ['doctor', 'admin'])
                 ->where('clinic_id', $user->clinic_id)
                 ->get();
 
-            $patients = Patient::where('clinic_id', $user->clinic_id)->get();
+            $patients = Patient::where('clinic_id', $user->clinic_id) ->orderBy('name_patient', 'ASC') ->get();
         }
 
         return view('events.create', compact('doctors', 'patients', 'clinic'));
@@ -159,7 +159,7 @@ class EventController extends Controller
                 ->where('clinic_id', $user->clinic_id)
                 ->get();
 
-            $patients = Patient::where('clinic_id', $user->clinic_id)->get();
+            $patients = Patient::where('clinic_id', $user->clinic_id) ->orderBy('name_patient', 'ASC') ->get();
         }
         return view('events.edit', compact('doctors', 'patients', 'event', 'clinic'));
     }
