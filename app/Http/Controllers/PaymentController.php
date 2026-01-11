@@ -113,11 +113,11 @@ class PaymentController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->whereHas('treatment', function ($t) use ($search) {
-                    $t->where('name', 'like', "%{$search}%")
-                        ->orWhere('ci_patient', 'like', "%{$search}%");
+                    $t->where('name', 'ilike', "%{$search}%")
+                        ->orWhere('ci_patient', 'ilike', "%{$search}%");
                 })
-                    ->orWhere('method', 'like', "%{$search}%")
-                    ->orWhere('notes', 'like', "%{$search}%");
+                    ->orWhere('method', 'ilike', "%{$search}%")
+                    ->orWhere('notes', 'ilike', "%{$search}%");
             });
         }
         $payments = $query->latest()->paginate(20);

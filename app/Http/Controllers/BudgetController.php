@@ -111,14 +111,12 @@ class BudgetController extends Controller
         // Aplicar búsqueda si hay texto
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('budget', 'like', "%{$search}%")
-                    ->orWhere('procedure', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                $q->where('budget', 'ilike', "%{$search}%")
+                    ->orWhere('procedure', 'ilike', "%{$search}%")
+                    ->orWhere('description', 'ilike', "%{$search}%");
             });
         }
-
         $budgets = $query->orderBy('budget', 'ASC')->paginate(10);
-
         return view('budgets.index', compact('budgets', 'search'));
     }
 }

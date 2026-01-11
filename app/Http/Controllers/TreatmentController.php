@@ -170,13 +170,15 @@ class TreatmentController extends Controller
         $user = Auth::user();
 
         $treatments = Treatment::where(function ($query) use ($search) {
-            $query->where('name', 'LIKE', "%$search%")
-                ->orWhere('ci_patient', 'LIKE', "%$search%");
+            $query->where('name', 'ILIKE', "%$search%")
+                ->orWhere('ci_patient', 'ILIKE', "%$search%");
         })
             ->when($user->role !== 'superadmin', function ($q) use ($user) {
                 $q->where('clinic_id', $user->clinic_id);
             })
-            ->get();
+            ->orderBy('id', 'DESC')
+            ->paginate(10)
+            ->withQueryString();
 
         return view('treatments.search', compact('treatments'));
     }
